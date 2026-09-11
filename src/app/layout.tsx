@@ -4,7 +4,6 @@ import "./globals.css";
 import { MembershipProvider } from "@/lib/membership";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { ScaleLock } from "@/components/scale-lock";
 
 const fraunces = Fraunces({
   variable: "--font-fraunces",
@@ -42,15 +41,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${fraunces.variable} ${inter.variable} ${plexMono.variable} ${permanentMarker.variable} antialiased`}
     >
       <body className="bg-cream text-ink">
-        <ScaleLock>
-          <MembershipProvider>
-            <div className="flex flex-col">
-              <SiteHeader />
-              <main className="flex-1">{children}</main>
-              <SiteFooter />
-            </div>
-          </MembershipProvider>
-        </ScaleLock>
+        <MembershipProvider>
+          <div className="flex min-h-dvh flex-col">
+            <SiteHeader />
+            <main className="flex-1">{children}</main>
+            <SiteFooter />
+          </div>
+        </MembershipProvider>
       </body>
     </html>
   );

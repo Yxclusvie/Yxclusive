@@ -37,32 +37,38 @@ const look = (slot: string) => LOOKS.find((l) => l.slot === slot)!;
 
 export default function LooksPage() {
   return (
-    <div className="mx-auto max-w-[1400px] px-10 pb-12 pt-12">
-      <div className="mb-10 max-w-4xl">
+    <div className="mx-auto max-w-[1400px] px-5 pb-12 pt-8 sm:px-10 sm:pt-12">
+      <div className="mb-8 max-w-4xl sm:mb-10">
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-citrus-deep">
           Looks
         </p>
-        <h1 className="mt-3 font-display text-5xl leading-[1.05] whitespace-nowrap text-ink">
+        <h1 className="mt-3 font-display text-3xl leading-[1.1] text-ink sm:text-4xl lg:text-5xl lg:leading-[1.05]">
           Buy it. Wear it. Style it. Love it.{" "}
           <span className="text-citrus-deep">Pass it on.</span>
         </h1>
-        <p className="mt-4 whitespace-nowrap text-[15px] leading-relaxed text-ink-soft">
+        <p className="mt-4 text-[15px] leading-relaxed text-ink-soft">
           Real looks from our community, proving these pieces have a whole new life to live
           — not just a closet to sit in.
         </p>
       </div>
 
-      <div className="grid h-[960px] grid-cols-12 grid-rows-4 gap-4">
-        <LookTile item={look("left")} className="col-span-5 row-span-4" />
-        <LookTile item={look("square")} className="col-span-3 col-start-6 row-span-2" />
-        <LookTile item={look("wideTop")} className="col-span-4 col-start-9 row-span-2" />
+      <div className="flex flex-col gap-4 lg:grid lg:h-[960px] lg:grid-cols-12 lg:grid-rows-4">
+        <LookTile item={look("left")} className="aspect-[4/5] lg:aspect-auto lg:col-span-5 lg:row-span-4" />
+        <LookTile
+          item={look("square")}
+          className="aspect-square lg:aspect-auto lg:col-span-3 lg:col-start-6 lg:row-span-2"
+        />
+        <LookTile
+          item={look("wideTop")}
+          className="aspect-[4/5] lg:aspect-auto lg:col-span-4 lg:col-start-9 lg:row-span-2"
+        />
         <LookTile
           item={look("wideBottom")}
-          className="col-span-4 col-start-6 row-span-2 row-start-3"
+          className="aspect-[4/5] lg:aspect-auto lg:col-span-4 lg:col-start-6 lg:row-span-2 lg:row-start-3"
         />
         <LookTile
           item={look("narrow")}
-          className="col-span-3 col-start-10 row-span-2 row-start-3"
+          className="aspect-[4/5] lg:aspect-auto lg:col-span-3 lg:col-start-10 lg:row-span-2 lg:row-start-3"
         />
       </div>
     </div>

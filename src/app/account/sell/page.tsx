@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { items, type Category } from "@/lib/items";
 
 const CATEGORIES: (Category | "Ready to Wear" | "Other")[] = [
-  "Handbags",
+  "Bags",
   "Ready to Wear",
   "Timepieces",
   "Jewelry",

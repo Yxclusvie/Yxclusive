@@ -1,4 +1,10 @@
-export type Category = "Handbags" | "Timepieces" | "Jewelry" | "Eyewear" | "Footwear";
+export type Category =
+  | "Bags"
+  | "Ready to Wear"
+  | "Timepieces"
+  | "Jewelry"
+  | "Eyewear"
+  | "Footwear";
 
 export type Item = {
   lot: string;
@@ -23,7 +29,7 @@ export const items: Item[] = [
     slug: "slouch-hobo-noir",
     name: "Slouch Hobo, Noir",
     maker: "Maison Vevette",
-    category: "Handbags",
+    category: "Bags",
     era: "Late 1990s",
     condition: "Excellent",
     price: 2850,
@@ -74,7 +80,7 @@ export const items: Item[] = [
     slug: "woven-tote-cognac",
     name: "Woven Tote, Cognac",
     maker: "Adler & Boon",
-    category: "Handbags",
+    category: "Bags",
     era: "Early 2010s",
     condition: "Brand New",
     price: 2650,
@@ -91,7 +97,7 @@ export const items: Item[] = [
     slug: "crocodile-embossed-bag-rouge",
     name: "Crocodile-Embossed Bag, Rouge",
     maker: "Maison Vevette",
-    category: "Handbags",
+    category: "Bags",
     era: "2016",
     condition: "Excellent",
     price: 3100,
@@ -125,7 +131,7 @@ export const items: Item[] = [
     slug: "weekend-satchel-espresso",
     name: "Weekend Satchel, Espresso",
     maker: "Adler & Boon",
-    category: "Handbags",
+    category: "Bags",
     era: "2015",
     condition: "Very Good",
     price: 1890,
@@ -244,7 +250,7 @@ export const items: Item[] = [
     slug: "pearl-beaded-clutch",
     name: "Pearl-Beaded Clutch",
     maker: "Maison Vevette",
-    category: "Handbags",
+    category: "Bags",
     era: "1980s",
     condition: "Very Good",
     price: 1650,
@@ -290,8 +296,56 @@ export const items: Item[] = [
       "Solid gold, hand-engraved crest, sized once. The kind of wear that only comes from being worn daily for decades.",
     provenance: "Family estate, provenance letter included.",
   },
+  {
+    lot: "0142",
+    slug: "trench-coat-camel",
+    name: "Trench Coat, Camel",
+    maker: "Fenwick & Vale",
+    category: "Ready to Wear",
+    era: "2018",
+    condition: "Excellent",
+    price: 890,
+    estRetail: 1150,
+    likes: 14,
+    image: "https://images.unsplash.com/photo-1601571218346-195a052bd80e?q=80&w=1200&auto=format&fit=crop",
+    aspect: 0.67,
+    description:
+      "Double-breasted wool-blend trench in camel, belt intact. Collar shows the faint shape of a lifetime of upturns.",
+    provenance: "Consigned by original owner, dry-cleaned and pressed before listing.",
+  },
+  {
+    lot: "0359",
+    slug: "silk-wrap-dress-rouge",
+    name: "Silk Wrap Dress, Rouge",
+    maker: "Fenwick & Vale",
+    category: "Ready to Wear",
+    era: "2020",
+    condition: "Very Good",
+    price: 420,
+    estRetail: 610,
+    likes: 9,
+    image: "https://images.unsplash.com/photo-1652445830470-9852667150b0?q=80&w=1200&auto=format&fit=crop",
+    aspect: 0.67,
+    description:
+      "Pure silk wrap in a deep rouge, tie waist. Worn for an evening, stored flat since — no pulls or fading.",
+    provenance: "Single owner, smoke-free home. Garment bag included.",
+  },
 ];
 
 export function getItemBySlug(slug: string): Item | undefined {
   return items.find((item) => item.slug === slug);
 }
+
+const CATEGORY_ORDER: Category[] = [
+  "Bags",
+  "Ready to Wear",
+  "Timepieces",
+  "Jewelry",
+  "Eyewear",
+  "Footwear",
+];
+
+export const CATEGORIES: { name: Category; image: string }[] = CATEGORY_ORDER.map((name) => ({
+  name,
+  image: items.find((item) => item.category === name)!.image,
+}));

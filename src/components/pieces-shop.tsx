@@ -5,7 +5,14 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Category, Item } from "@/lib/items";
 
-const CATEGORIES: Category[] = ["Handbags", "Timepieces", "Jewelry", "Eyewear", "Footwear"];
+const CATEGORIES: Category[] = [
+  "Bags",
+  "Ready to Wear",
+  "Timepieces",
+  "Jewelry",
+  "Eyewear",
+  "Footwear",
+];
 const CONDITIONS: Item["condition"][] = ["Brand New", "Excellent", "Very Good"];
 const SORTS = [
   { value: "newest", label: "Newest" },
@@ -26,12 +33,24 @@ function useCounts<T extends string>(items: Item[], key: "maker" | "condition" |
   }, [items, key]);
 }
 
-export function PiecesShop({ items }: { items: Item[] }) {
+export function PiecesShop({
+  items,
+  initialCategory,
+}: {
+  items: Item[];
+  initialCategory?: string;
+}) {
+  const validInitialCategory =
+    initialCategory && CATEGORIES.includes(initialCategory as Category) ? initialCategory : undefined;
+
   const [makers, setMakers] = useState<Set<string>>(new Set());
   const [conditions, setConditions] = useState<Set<string>>(new Set());
-  const [categories, setCategories] = useState<Set<string>>(new Set());
+  const [categories, setCategories] = useState<Set<string>>(
+    new Set(validInitialCategory ? [validInitialCategory] : []),
+  );
   const [sort, setSort] = useState<SortValue>("newest");
   const [saved, setSaved] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const makerList = useMemo(
     () => Array.from(new Set(items.map((item) => item.maker))).sort(),
@@ -68,9 +87,22 @@ export function PiecesShop({ items }: { items: Item[] }) {
     setTimeout(() => setSaved(false), 2000);
   };
 
+  const activeFilterCount = makers.size + categories.size + conditions.size;
+
   return (
-    <div className="grid grid-cols-[240px_1fr] gap-10">
-      <aside className="pt-1">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr] lg:gap-10">
+      <button
+        type="button"
+        onClick={() => setFiltersOpen((prev) => !prev)}
+        className="flex items-center justify-between rounded-sm border border-ink-line bg-paper px-4 py-3 font-mono text-[11px] uppercase tracking-[0.14em] text-ink lg:hidden"
+      >
+        <span>
+          Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+        </span>
+        <span>{filtersOpen ? "Hide" : "Show"}</span>
+      </button>
+
+      <aside className={`pt-1 ${filtersOpen ? "block" : "hidden"} lg:block`}>
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-xl text-ink">Filter</h2>
           <p className="font-mono text-[11px] text-ink-soft">{filtered.length} Items</p>
@@ -122,7 +154,7 @@ export function PiecesShop({ items }: { items: Item[] }) {
       </aside>
 
       <div>
-        <div className="mb-6 flex items-center justify-between border-b border-ink-line pb-4">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-ink-line pb-4">
           <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-soft">
             {filtered.length} {filtered.length === 1 ? "Piece" : "Pieces"}
           </p>
@@ -147,7 +179,7 @@ export function PiecesShop({ items }: { items: Item[] }) {
             No pieces match those filters yet.
           </p>
         ) : (
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
             {filtered.map((item) => (
               <ProductCard key={item.slug} item={item} />
             ))}
@@ -207,7 +239,7 @@ function ProductCard({ item }: { item: Item }) {
             src={item.image}
             alt={`${item.name} by ${item.maker}`}
             fill
-            sizes="25vw"
+            sizes="(max-width: 1024px) 50vw, 25vw"
             className="object-cover transition duration-700 ease-out group-hover:scale-[1.04]"
           />
         </div>

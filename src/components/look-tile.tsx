@@ -50,7 +50,7 @@ export function LookTile({
         src={item.src}
         alt={item.alt}
         fill
-        sizes="40vw"
+        sizes="(max-width: 1024px) 100vw, 40vw"
         className="object-cover grayscale transition duration-700 group-hover:grayscale-0"
       />
 

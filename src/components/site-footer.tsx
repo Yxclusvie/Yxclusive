@@ -1,8 +1,8 @@
 export function SiteFooter() {
   return (
-    <footer className="border-t border-ink-line bg-paper py-10">
-      <div className="mx-auto flex max-w-[1400px] flex-col gap-4 px-10 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-soft">
-        <div className="flex flex-row items-center justify-between gap-4">
+    <footer className="border-t border-ink-line bg-paper py-8 sm:py-10">
+      <div className="mx-auto flex max-w-[1400px] flex-col gap-4 px-5 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-soft sm:px-10">
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <p>&copy; {new Date().getFullYear()} Yxclusive LLC. Passed it on, not put away.</p>
           <p>Browsing is open to all. Selling is a Yxmember privilege.</p>
         </div>

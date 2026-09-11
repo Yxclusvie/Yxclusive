@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useMembership } from "@/lib/membership";
 
@@ -12,14 +11,14 @@ const FEATURES = [
 ];
 
 export default function MembershipPage() {
-  const { isMember, isLoaded, member, join, end } = useMembership();
-  const router = useRouter();
+  const { isMember, isLoaded, member, end } = useMembership();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     const trimmedName = name.trim();
@@ -36,20 +35,39 @@ export default function MembershipPage() {
     }
 
     setError(null);
-    join({ name: trimmedName, email: trimmedEmail });
-    router.push("/pieces");
+    setSubmitting(true);
+
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmedName, email: trimmedEmail }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.url) {
+        setError(data.error ?? "Something went wrong starting checkout.");
+        setSubmitting(false);
+        return;
+      }
+
+      window.location.href = data.url;
+    } catch {
+      setError("Something went wrong starting checkout.");
+      setSubmitting(false);
+    }
   };
 
   return (
-    <div className="mx-auto max-w-[1400px] px-10 pb-24 pt-12">
-      <div className="grid grid-cols-[0.9fr_1.1fr] items-center gap-16">
+    <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-8 sm:px-10 sm:pb-24 sm:pt-12">
+      <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
         <div className="relative w-full overflow-hidden rounded-sm border border-ink-line bg-paper">
           <div className="relative w-full" style={{ aspectRatio: "4/5" }}>
             <Image
               src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1200&auto=format&fit=crop"
               alt="A rack of clothing ready for its next owner"
               fill
-              sizes="45vw"
+              sizes="(max-width: 1024px) 90vw, 45vw"
               className="object-cover grayscale"
             />
           </div>
@@ -59,7 +77,7 @@ export default function MembershipPage() {
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-citrus-deep">
             Membership
           </p>
-          <h1 className="mt-3 font-display text-4xl leading-[1.1] text-ink">
+          <h1 className="mt-3 font-display text-3xl leading-[1.1] text-ink sm:text-4xl">
             Ready for your piece to have a new life? Become a Yxmember and pass your piece to
             its next journey.
           </h1>
@@ -151,9 +169,10 @@ export default function MembershipPage() {
 
                   <button
                     type="submit"
-                    className="w-full rounded-full bg-ink py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft"
+                    disabled={submitting}
+                    className="w-full rounded-full bg-ink py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    Become a Yxmember
+                    {submitting ? "Redirecting to Checkout…" : "Become a Yxmember"}
                   </button>
                 </form>
               )}
@@ -161,7 +180,7 @@ export default function MembershipPage() {
           </div>
 
           <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-soft/70">
-            Billing is not yet connected — joining here unlocks the demo experience only.
+            You&rsquo;ll be redirected to Stripe to complete payment securely.
           </p>
         </div>
       </div>

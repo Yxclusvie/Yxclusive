@@ -22,21 +22,21 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
   }, [isLoaded, isMember, router]);
 
   if (!isLoaded || !isMember) {
-    return <div className="mx-auto max-w-[1400px] px-10 py-24" />;
+    return <div className="mx-auto max-w-[1400px] px-5 py-24 sm:px-10" />;
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] px-10 pb-24 pt-12">
-      <div className="grid grid-cols-[200px_1fr] gap-12">
+    <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-8 sm:px-10 sm:pb-24 sm:pt-12">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[200px_1fr] lg:gap-12">
         <aside>
-          <nav className="space-y-1">
+          <nav className="flex flex-row gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:overflow-visible lg:space-y-1 lg:pb-0">
             {ACCOUNT_NAV.map((link) => {
               const active = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`block rounded-sm px-3 py-2 font-mono text-[11px] uppercase tracking-[0.12em] transition ${
+                  className={`block shrink-0 rounded-sm px-3 py-2 font-mono text-[11px] uppercase tracking-[0.12em] transition ${
                     active
                       ? "bg-ink text-cream"
                       : "text-ink-soft hover:bg-paper hover:text-ink"
@@ -48,7 +48,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
             })}
           </nav>
 
-          <div className="mt-8 border-t border-ink-line pt-6">
+          <div className="mt-4 border-t border-ink-line pt-4 lg:mt-8 lg:pt-6">
             <Link
               href="/pieces"
               className="font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"

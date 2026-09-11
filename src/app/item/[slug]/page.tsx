@@ -18,7 +18,7 @@ export default async function ItemPage({
   if (!item) notFound();
 
   return (
-    <div className="mx-auto max-w-[1400px] px-10 pb-24 pt-10">
+    <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-8 sm:px-10 sm:pb-24 sm:pt-10">
       <Link
         href="/pieces"
         className="font-mono text-[11px] uppercase tracking-[0.16em] text-ink-soft transition hover:text-citrus-deep"
@@ -26,7 +26,7 @@ export default async function ItemPage({
         ← Back to the Pieces
       </Link>
 
-      <div className="mt-8 grid grid-cols-[1.2fr_1fr] gap-16">
+      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
         <div
           className="relative w-full overflow-hidden rounded-sm border border-ink-line bg-paper"
           style={{ aspectRatio: item.aspect < 1 ? item.aspect : 1 }}
@@ -35,7 +35,7 @@ export default async function ItemPage({
             src={item.image}
             alt={`${item.name} by ${item.maker}`}
             fill
-            sizes="55vw"
+            sizes="(max-width: 1024px) 100vw, 55vw"
             priority
             className="object-cover"
           />
@@ -45,7 +45,7 @@ export default async function ItemPage({
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-citrus-deep">
             Lot №{item.lot} · {item.category}
           </p>
-          <h1 className="mt-3 font-display text-4xl leading-[1.05] text-ink">
+          <h1 className="mt-3 font-display text-3xl leading-[1.05] text-ink sm:text-4xl">
             {item.name}
           </h1>
           <p className="mt-2 font-mono text-sm uppercase tracking-[0.1em] text-ink-soft">

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 type Member = {
   name: string;
@@ -31,15 +31,15 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
     setIsLoaded(true);
   }, []);
 
-  const join = (newMember: Member) => {
+  const join = useCallback((newMember: Member) => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newMember));
     setMember(newMember);
-  };
+  }, []);
 
-  const end = () => {
+  const end = useCallback(() => {
     window.localStorage.removeItem(STORAGE_KEY);
     setMember(null);
-  };
+  }, []);
 
   return (
     <MembershipContext.Provider
