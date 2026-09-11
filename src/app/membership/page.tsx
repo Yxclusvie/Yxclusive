@@ -11,14 +11,17 @@ const FEATURES = [
 ];
 
 export default function MembershipPage() {
-  const { isMember, isLoaded, member, end } = useMembership();
+  const { isMember, isLoaded, member, signInWithEmail, signOut } = useMembership();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const isSignedIn = isLoaded && member !== null;
+
+  const handleSendLink = async (event: React.FormEvent) => {
     event.preventDefault();
 
     const trimmedName = name.trim();
@@ -37,12 +40,24 @@ export default function MembershipPage() {
     setError(null);
     setSubmitting(true);
 
+    const { error: signInError } = await signInWithEmail({ name: trimmedName, email: trimmedEmail });
+
+    if (signInError) {
+      setError(signInError);
+      setSubmitting(false);
+      return;
+    }
+
+    setLinkSent(true);
+    setSubmitting(false);
+  };
+
+  const handleCheckout = async () => {
+    setError(null);
+    setSubmitting(true);
+
     try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmedName, email: trimmedEmail }),
-      });
+      const response = await fetch("/api/checkout", { method: "POST" });
       const data = await response.json();
 
       if (!response.ok || !data.url) {
@@ -82,16 +97,18 @@ export default function MembershipPage() {
             its next journey.
           </h1>
 
-          {isLoaded && isMember && member && (
+          {isSignedIn && member && (
             <div className="mt-6 flex items-center justify-between rounded-sm border border-ink/40 bg-paper px-5 py-4">
               <p className="font-mono text-xs uppercase tracking-[0.12em] text-ink">
-                You&rsquo;re a Yxmember, {member.name.split(" ")[0]} — selling is unlocked.
+                {isMember
+                  ? `You're a Yxmember, ${member.name.split(" ")[0] || member.email} — selling is unlocked.`
+                  : `Signed in as ${member.email}`}
               </p>
               <button
-                onClick={end}
+                onClick={() => void signOut()}
                 className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft underline underline-offset-4 transition hover:text-ink"
               >
-                End membership
+                Sign out
               </button>
             </div>
           )}
@@ -125,8 +142,36 @@ export default function MembershipPage() {
                 >
                   Already a Yxmember
                 </button>
+              ) : isSignedIn ? (
+                <div className="mt-7 border-t border-ink-line pt-6">
+                  {error && (
+                    <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.08em] text-red-700">
+                      {error}
+                    </p>
+                  )}
+                  <button
+                    onClick={handleCheckout}
+                    disabled={submitting}
+                    className="w-full rounded-full bg-ink py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {submitting ? "Redirecting to Checkout…" : "Become a Yxmember"}
+                  </button>
+                </div>
+              ) : linkSent ? (
+                <div className="mt-7 border-t border-ink-line pt-6">
+                  <p className="text-sm leading-relaxed text-ink">
+                    Check <span className="font-medium">{email.trim()}</span> for a sign-in
+                    link — click it to continue.
+                  </p>
+                  <button
+                    onClick={() => setLinkSent(false)}
+                    className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"
+                  >
+                    Use a different email
+                  </button>
+                </div>
               ) : (
-                <form onSubmit={handleSubmit} className="mt-7 space-y-3 border-t border-ink-line pt-6">
+                <form onSubmit={handleSendLink} className="mt-7 space-y-3 border-t border-ink-line pt-6">
                   <div>
                     <label
                       htmlFor="name"
@@ -172,7 +217,7 @@ export default function MembershipPage() {
                     disabled={submitting}
                     className="w-full rounded-full bg-ink py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {submitting ? "Redirecting to Checkout…" : "Become a Yxmember"}
+                    {submitting ? "Sending Link…" : "Continue with Email"}
                   </button>
                 </form>
               )}
@@ -180,7 +225,9 @@ export default function MembershipPage() {
           </div>
 
           <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-soft/70">
-            You&rsquo;ll be redirected to Stripe to complete payment securely.
+            {isSignedIn
+              ? "You'll be redirected to Stripe to complete payment securely."
+              : "No password needed — we'll email you a secure sign-in link."}
           </p>
         </div>
       </div>

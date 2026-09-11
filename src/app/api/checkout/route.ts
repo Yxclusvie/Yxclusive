@@ -1,20 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, MEMBERSHIP_PRICE_USD } from "@/lib/stripe";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
-  const body = await request.json().catch(() => null);
-  const name = typeof body?.name === "string" ? body.name.trim() : "";
-  const email = typeof body?.email === "string" ? body.email.trim() : "";
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!name || !email) {
-    return NextResponse.json({ error: "Name and email are required." }, { status: 400 });
+  if (!user?.email) {
+    return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("name")
+    .eq("id", user.id)
+    .single();
 
   const origin = request.nextUrl.origin;
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
-    customer_email: email,
+    customer_email: user.email,
     line_items: [
       {
         price_data: {
@@ -29,7 +37,7 @@ export async function POST(request: NextRequest) {
         quantity: 1,
       },
     ],
-    metadata: { name },
+    metadata: { userId: user.id, name: profile?.name ?? "" },
     success_url: `${origin}/membership/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/membership`,
   });

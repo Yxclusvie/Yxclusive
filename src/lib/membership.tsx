@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type Member = {
   name: string;
@@ -11,39 +12,101 @@ type MembershipState = {
   isMember: boolean;
   isLoaded: boolean;
   member: Member | null;
-  join: (member: Member) => void;
-  end: () => void;
+  signInWithEmail: (input: { name: string; email: string }) => Promise<{ error?: string }>;
+  updateProfile: (input: { name: string }) => Promise<{ error?: string }>;
+  signOut: () => Promise<void>;
 };
-
-const STORAGE_KEY = "yxclusive.membership";
 
 const MembershipContext = createContext<MembershipState | null>(null);
 
 export function MembershipProvider({ children }: { children: React.ReactNode }) {
+  const supabase = useMemo(() => createClient(), []);
   const [member, setMember] = useState<Member | null>(null);
+  const [isMember, setIsMember] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const loadProfile = useCallback(
+    async (userId: string, fallbackEmail: string) => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("name, email, is_member")
+        .eq("id", userId)
+        .single();
+
+      setMember({ name: data?.name ?? "", email: data?.email ?? fallbackEmail });
+      setIsMember(Boolean(data?.is_member));
+    },
+    [supabase],
+  );
+
   useEffect(() => {
-    // Reads localStorage after mount to avoid an SSR/client hydration mismatch.
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMember(raw ? (JSON.parse(raw) as Member) : null);
-    setIsLoaded(true);
-  }, []);
+    let active = true;
 
-  const join = useCallback((newMember: Member) => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newMember));
-    setMember(newMember);
-  }, []);
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!active) return;
+      if (user) {
+        await loadProfile(user.id, user.email ?? "");
+      } else {
+        setMember(null);
+        setIsMember(false);
+      }
+      setIsLoaded(true);
+    });
 
-  const end = useCallback(() => {
-    window.localStorage.removeItem(STORAGE_KEY);
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!active) return;
+      if (session?.user) {
+        await loadProfile(session.user.id, session.user.email ?? "");
+      } else {
+        setMember(null);
+        setIsMember(false);
+      }
+      setIsLoaded(true);
+    });
+
+    return () => {
+      active = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, [supabase, loadProfile]);
+
+  const signInWithEmail = useCallback(
+    async ({ name, email }: { name: string; email: string }) => {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          data: { full_name: name },
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/membership`,
+        },
+      });
+      return error ? { error: error.message } : {};
+    },
+    [supabase],
+  );
+
+  const updateProfile = useCallback(
+    async ({ name }: { name: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { error: "Not signed in." };
+
+      const { error } = await supabase.from("profiles").update({ name }).eq("id", user.id);
+      if (error) return { error: error.message };
+
+      setMember((prev) => (prev ? { ...prev, name } : prev));
+      return {};
+    },
+    [supabase],
+  );
+
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
     setMember(null);
-  }, []);
+    setIsMember(false);
+  }, [supabase]);
 
   return (
     <MembershipContext.Provider
-      value={{ isMember: member !== null, isLoaded, member, join, end }}
+      value={{ isMember, isLoaded, member, signInWithEmail, updateProfile, signOut }}
     >
       {children}
     </MembershipContext.Provider>

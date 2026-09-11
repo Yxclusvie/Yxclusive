@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { stripe } from "@/lib/stripe";
+import { createClient } from "@/lib/supabase/server";
 import { SuccessClient } from "./success-client";
 
 export default async function MembershipSuccessPage({
@@ -16,10 +17,28 @@ export default async function MembershipSuccessPage({
     redirect("/membership");
   }
 
-  const email = session.customer_details?.email ?? "";
-  const name = (session.metadata?.name || session.customer_details?.name || "Yxmember").trim();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!email) redirect("/membership");
+  if (!user) redirect("/membership");
 
-  return <SuccessClient name={name} email={email} />;
+  const name = (session.metadata?.name || "Yxmember").trim();
+  const stripeCustomerId =
+    typeof session.customer === "string" ? session.customer : session.customer?.id;
+  const stripeSubscriptionId =
+    typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+
+  await supabase
+    .from("profiles")
+    .update({
+      is_member: true,
+      stripe_customer_id: stripeCustomerId,
+      stripe_subscription_id: stripeSubscriptionId,
+      ...(name ? { name } : {}),
+    })
+    .eq("id", user.id);
+
+  return <SuccessClient name={name || user.email || "Yxmember"} />;
 }

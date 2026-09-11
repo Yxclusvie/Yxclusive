@@ -5,21 +5,25 @@ import { useState } from "react";
 import { useMembership } from "@/lib/membership";
 
 export default function ProfilePage() {
-  const { member, join } = useMembership();
+  const { member, updateProfile } = useMembership();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(member?.name ?? "");
-  const [email, setEmail] = useState(member?.email ?? "");
+  const [error, setError] = useState<string | null>(null);
   const [marketingEmail, setMarketingEmail] = useState(false);
 
   if (!member) return null;
 
-  const firstName = member.name.split(" ")[0];
+  const firstName = (member.name || member.email).split(" ")[0];
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const trimmedName = name.trim();
-    const trimmedEmail = email.trim();
-    if (!trimmedName || !trimmedEmail) return;
-    join({ name: trimmedName, email: trimmedEmail });
+    if (!trimmedName) return;
+    const { error: updateError } = await updateProfile({ name: trimmedName });
+    if (updateError) {
+      setError(updateError);
+      return;
+    }
+    setError(null);
     setEditing(false);
   };
 
@@ -44,11 +48,11 @@ export default function ProfilePage() {
       </div>
 
       <div className="mt-10 flex items-baseline justify-between">
-        <p className="font-display text-xl text-ink">{member.name}</p>
+        <p className="font-display text-xl text-ink">{member.name || member.email}</p>
         <button
           onClick={() => {
             setName(member.name);
-            setEmail(member.email);
+            setError(null);
             setEditing((prev) => !prev);
           }}
           className="font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"
@@ -69,19 +73,13 @@ export default function ProfilePage() {
               className="mt-1.5 w-full rounded-sm border border-ink-line bg-cream px-3 py-2.5 text-sm text-ink outline-none focus:border-ink"
             />
           </div>
-          <div>
-            <label className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="mt-1.5 w-full rounded-sm border border-ink-line bg-cream px-3 py-2.5 text-sm text-ink outline-none focus:border-ink"
-            />
-          </div>
+          {error && (
+            <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-red-700">
+              {error}
+            </p>
+          )}
           <button
-            onClick={handleSave}
+            onClick={() => void handleSave()}
             className="rounded-full bg-ink px-5 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft"
           >
             Save
