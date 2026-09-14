@@ -4,7 +4,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { createClient } from "@/lib/supabase/client";
 
 type Member = {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
 };
 
@@ -12,8 +13,14 @@ type MembershipState = {
   isMember: boolean;
   isLoaded: boolean;
   member: Member | null;
-  signInWithEmail: (input: { name: string; email: string }) => Promise<{ error?: string }>;
-  updateProfile: (input: { name: string }) => Promise<{ error?: string }>;
+  signUpWithPassword: (input: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+  }) => Promise<{ error?: string; needsConfirmation?: boolean }>;
+  signInWithPassword: (input: { email: string; password: string }) => Promise<{ error?: string }>;
+  updateProfile: (input: { firstName: string; lastName: string }) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
 };
 
@@ -29,11 +36,15 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
     async (userId: string, fallbackEmail: string) => {
       const { data } = await supabase
         .from("profiles")
-        .select("name, email, is_member")
+        .select("first_name, last_name, email, is_member")
         .eq("id", userId)
         .single();
 
-      setMember({ name: data?.name ?? "", email: data?.email ?? fallbackEmail });
+      setMember({
+        firstName: data?.first_name ?? "",
+        lastName: data?.last_name ?? "",
+        email: data?.email ?? fallbackEmail,
+      });
       setIsMember(Boolean(data?.is_member));
     },
     [supabase],
@@ -70,29 +81,62 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
     };
   }, [supabase, loadProfile]);
 
-  const signInWithEmail = useCallback(
-    async ({ name, email }: { name: string; email: string }) => {
-      const { error } = await supabase.auth.signInWithOtp({
+  const signUpWithPassword = useCallback(
+    async ({
+      firstName,
+      lastName,
+      email,
+      password,
+    }: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      password: string;
+    }) => {
+      const { data, error } = await supabase.auth.signUp({
         email,
-        options: {
-          data: { full_name: name },
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/membership`,
-        },
+        password,
+        options: { data: { first_name: firstName, last_name: lastName } },
       });
-      return error ? { error: error.message } : {};
+
+      if (error) {
+        return {
+          error: /already registered|already exists/i.test(error.message)
+            ? "An account with that email already exists."
+            : error.message || "Something went wrong creating your account.",
+        };
+      }
+
+      // Email confirmation is enabled on the project — signUp succeeds but
+      // returns no session until the confirmation link is clicked.
+      if (!data.session) return { needsConfirmation: true };
+
+      return {};
+    },
+    [supabase],
+  );
+
+  const signInWithPassword = useCallback(
+    async ({ email, password }: { email: string; password: string }) => {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return { error: "Incorrect email or password." };
+      return {};
     },
     [supabase],
   );
 
   const updateProfile = useCallback(
-    async ({ name }: { name: string }) => {
+    async ({ firstName, lastName }: { firstName: string; lastName: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return { error: "Not signed in." };
 
-      const { error } = await supabase.from("profiles").update({ name }).eq("id", user.id);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ first_name: firstName, last_name: lastName })
+        .eq("id", user.id);
       if (error) return { error: error.message };
 
-      setMember((prev) => (prev ? { ...prev, name } : prev));
+      setMember((prev) => (prev ? { ...prev, firstName, lastName } : prev));
       return {};
     },
     [supabase],
@@ -106,7 +150,15 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
 
   return (
     <MembershipContext.Provider
-      value={{ isMember, isLoaded, member, signInWithEmail, updateProfile, signOut }}
+      value={{
+        isMember,
+        isLoaded,
+        member,
+        signUpWithPassword,
+        signInWithPassword,
+        updateProfile,
+        signOut,
+      }}
     >
       {children}
     </MembershipContext.Provider>

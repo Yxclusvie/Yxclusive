@@ -14,9 +14,11 @@ export async function POST(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("name")
+    .select("first_name, last_name")
     .eq("id", user.id)
     .single();
+
+  const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ");
 
   const origin = request.nextUrl.origin;
 
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest) {
         quantity: 1,
       },
     ],
-    metadata: { userId: user.id, name: profile?.name ?? "" },
+    metadata: { userId: user.id, name },
     success_url: `${origin}/membership/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/membership`,
   });

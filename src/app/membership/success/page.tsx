@@ -24,21 +24,27 @@ export default async function MembershipSuccessPage({
 
   if (!user) redirect("/membership");
 
-  const name = (session.metadata?.name || "Yxmember").trim();
   const stripeCustomerId =
     typeof session.customer === "string" ? session.customer : session.customer?.id;
   const stripeSubscriptionId =
     typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
 
-  await supabase
+  const { error: updateError } = await supabase
     .from("profiles")
     .update({
       is_member: true,
       stripe_customer_id: stripeCustomerId,
       stripe_subscription_id: stripeSubscriptionId,
-      ...(name ? { name } : {}),
     })
     .eq("id", user.id);
 
-  return <SuccessClient name={name || user.email || "Yxmember"} />;
+  if (updateError) {
+    // Payment succeeded but we failed to activate membership — this must not
+    // render a false "you're a member" success state.
+    throw new Error(`Failed to activate membership: ${updateError.message}`);
+  }
+
+  const name = (session.metadata?.name || "").trim() || user.email || "Yxmember";
+
+  return <SuccessClient name={name} />;
 }

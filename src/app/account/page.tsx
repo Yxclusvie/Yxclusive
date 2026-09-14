@@ -7,18 +7,24 @@ import { useMembership } from "@/lib/membership";
 export default function ProfilePage() {
   const { member, updateProfile } = useMembership();
   const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(member?.name ?? "");
+  const [firstName, setFirstName] = useState(member?.firstName ?? "");
+  const [lastName, setLastName] = useState(member?.lastName ?? "");
   const [error, setError] = useState<string | null>(null);
   const [marketingEmail, setMarketingEmail] = useState(false);
 
   if (!member) return null;
 
-  const firstName = (member.name || member.email).split(" ")[0];
+  const displayFirstName = member.firstName || member.email;
+  const fullName = [member.firstName, member.lastName].filter(Boolean).join(" ");
 
   const handleSave = async () => {
-    const trimmedName = name.trim();
-    if (!trimmedName) return;
-    const { error: updateError } = await updateProfile({ name: trimmedName });
+    const trimmedFirst = firstName.trim();
+    const trimmedLast = lastName.trim();
+    if (!trimmedFirst || !trimmedLast) return;
+    const { error: updateError } = await updateProfile({
+      firstName: trimmedFirst,
+      lastName: trimmedLast,
+    });
     if (updateError) {
       setError(updateError);
       return;
@@ -30,7 +36,7 @@ export default function ProfilePage() {
   return (
     <div>
       <div className="rounded-sm border border-ink-line bg-paper p-6">
-        <p className="font-display text-2xl text-ink">Hi, {firstName}</p>
+        <p className="font-display text-2xl text-ink">Hi, {displayFirstName}</p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
             href="/pieces"
@@ -48,10 +54,11 @@ export default function ProfilePage() {
       </div>
 
       <div className="mt-10 flex items-baseline justify-between">
-        <p className="font-display text-xl text-ink">{member.name || member.email}</p>
+        <p className="font-display text-xl text-ink">{fullName || member.email}</p>
         <button
           onClick={() => {
-            setName(member.name);
+            setFirstName(member.firstName);
+            setLastName(member.lastName);
             setError(null);
             setEditing((prev) => !prev);
           }}
@@ -63,15 +70,27 @@ export default function ProfilePage() {
 
       {editing ? (
         <div className="mt-3 space-y-3 rounded-sm border border-ink-line bg-paper p-5">
-          <div>
-            <label className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
-              Full name
-            </label>
-            <input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              className="mt-1.5 w-full rounded-sm border border-ink-line bg-cream px-3 py-2.5 text-sm text-ink outline-none focus:border-ink"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
+                First name
+              </label>
+              <input
+                value={firstName}
+                onChange={(event) => setFirstName(event.target.value)}
+                className="mt-1.5 w-full rounded-sm border border-ink-line bg-cream px-3 py-2.5 text-sm text-ink outline-none focus:border-ink"
+              />
+            </div>
+            <div>
+              <label className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
+                Last name
+              </label>
+              <input
+                value={lastName}
+                onChange={(event) => setLastName(event.target.value)}
+                className="mt-1.5 w-full rounded-sm border border-ink-line bg-cream px-3 py-2.5 text-sm text-ink outline-none focus:border-ink"
+              />
+            </div>
           </div>
           {error && (
             <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-red-700">
