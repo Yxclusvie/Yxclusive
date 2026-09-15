@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { items } from "@/lib/items";
+import { getItems } from "@/lib/items";
 
-const mostLiked = [...items].sort((a, b) => b.likes - a.likes).slice(0, 8);
+export default async function Home() {
+  const items = await getItems();
+  const mostLiked = [...items].sort((a, b) => b.likes - a.likes).slice(0, 8);
 
-export default function Home() {
   return (
     <div>
       <section className="bg-citrus">
@@ -72,7 +73,7 @@ export default function Home() {
               <div className="relative w-full overflow-hidden rounded-sm border border-ink-line bg-paper">
                 <div className="relative w-full" style={{ aspectRatio: "4/5" }}>
                   <Image
-                    src={item.image}
+                    src={item.images[0]?.url ?? ""}
                     alt={`${item.name} by ${item.maker}`}
                     fill
                     sizes="(max-width: 640px) 144px, (max-width: 1024px) 192px, 224px"

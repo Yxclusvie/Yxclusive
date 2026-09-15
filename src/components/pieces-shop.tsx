@@ -236,7 +236,7 @@ function ProductCard({ item }: { item: Item }) {
       <div className="relative w-full overflow-hidden rounded-sm border border-ink-line bg-paper">
         <div className="relative aspect-square w-full">
           <Image
-            src={item.image}
+            src={item.images[0]?.url ?? ""}
             alt={`${item.name} by ${item.maker}`}
             fill
             sizes="(max-width: 1024px) 50vw, 25vw"

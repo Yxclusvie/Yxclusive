@@ -11,6 +11,7 @@ type Member = {
 
 type MembershipState = {
   isMember: boolean;
+  isAdmin: boolean;
   isLoaded: boolean;
   member: Member | null;
   signUpWithPassword: (input: {
@@ -30,13 +31,14 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
   const supabase = useMemo(() => createClient(), []);
   const [member, setMember] = useState<Member | null>(null);
   const [isMember, setIsMember] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const loadProfile = useCallback(
     async (userId: string, fallbackEmail: string) => {
       const { data } = await supabase
         .from("profiles")
-        .select("first_name, last_name, email, is_member")
+        .select("first_name, last_name, email, is_member, is_admin")
         .eq("id", userId)
         .single();
 
@@ -46,6 +48,7 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
         email: data?.email ?? fallbackEmail,
       });
       setIsMember(Boolean(data?.is_member));
+      setIsAdmin(Boolean(data?.is_admin));
     },
     [supabase],
   );
@@ -60,6 +63,7 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
       } else {
         setMember(null);
         setIsMember(false);
+        setIsAdmin(false);
       }
       setIsLoaded(true);
     });
@@ -71,6 +75,7 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
       } else {
         setMember(null);
         setIsMember(false);
+        setIsAdmin(false);
       }
       setIsLoaded(true);
     });
@@ -146,12 +151,14 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
     await supabase.auth.signOut();
     setMember(null);
     setIsMember(false);
+    setIsAdmin(false);
   }, [supabase]);
 
   return (
     <MembershipContext.Provider
       value={{
         isMember,
+        isAdmin,
         isLoaded,
         member,
         signUpWithPassword,

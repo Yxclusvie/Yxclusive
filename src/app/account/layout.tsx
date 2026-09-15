@@ -13,7 +13,7 @@ const ACCOUNT_NAV = [
 ];
 
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
-  const { isMember, isLoaded } = useMembership();
+  const { isMember, isAdmin, isLoaded } = useMembership();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -56,6 +56,17 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
               Shop the Pieces →
             </Link>
           </div>
+
+          {isAdmin && (
+            <div className="mt-4 border-t border-ink-line pt-4">
+              <Link
+                href="/admin/products"
+                className="font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"
+              >
+                Manage Inventory →
+              </Link>
+            </div>
+          )}
         </aside>
 
         <div>{children}</div>
