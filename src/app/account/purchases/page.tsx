@@ -11,7 +11,9 @@ export default function PurchasesPage() {
     <div>
       <div className="flex items-center justify-between rounded-sm border border-ink-line bg-paper p-6">
         <div>
-          <p className="font-display text-xl text-ink">Welcome, {member.name.split(" ")[0]}</p>
+          <p className="font-display text-xl text-ink">
+            Welcome, {member.firstName || member.email}
+          </p>
           <p className="mt-1 text-sm text-ink-soft">Ready to shop?</p>
         </div>
         <Link

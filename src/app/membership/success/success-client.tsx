@@ -2,17 +2,14 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useMembership } from "@/lib/membership";
 
-export function SuccessClient({ name, email }: { name: string; email: string }) {
-  const { join } = useMembership();
+export function SuccessClient({ name }: { name: string }) {
   const router = useRouter();
 
   useEffect(() => {
-    join({ name, email });
     const timer = setTimeout(() => router.push("/pieces"), 1600);
     return () => clearTimeout(timer);
-  }, [join, name, email, router]);
+  }, [router]);
 
   return (
     <div className="mx-auto max-w-lg px-5 py-20 text-center sm:px-10 sm:py-32">

@@ -1,49 +1,171 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type Member = {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
 };
 
 type MembershipState = {
   isMember: boolean;
+  isAdmin: boolean;
   isLoaded: boolean;
   member: Member | null;
-  join: (member: Member) => void;
-  end: () => void;
+  signUpWithPassword: (input: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+  }) => Promise<{ error?: string; needsConfirmation?: boolean }>;
+  signInWithPassword: (input: { email: string; password: string }) => Promise<{ error?: string }>;
+  updateProfile: (input: { firstName: string; lastName: string }) => Promise<{ error?: string }>;
+  signOut: () => Promise<void>;
 };
-
-const STORAGE_KEY = "yxclusive.membership";
 
 const MembershipContext = createContext<MembershipState | null>(null);
 
 export function MembershipProvider({ children }: { children: React.ReactNode }) {
+  const supabase = useMemo(() => createClient(), []);
   const [member, setMember] = useState<Member | null>(null);
+  const [isMember, setIsMember] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const loadProfile = useCallback(
+    async (userId: string, fallbackEmail: string) => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("first_name, last_name, email, is_member, is_admin")
+        .eq("id", userId)
+        .single();
+
+      setMember({
+        firstName: data?.first_name ?? "",
+        lastName: data?.last_name ?? "",
+        email: data?.email ?? fallbackEmail,
+      });
+      setIsMember(Boolean(data?.is_member));
+      setIsAdmin(Boolean(data?.is_admin));
+    },
+    [supabase],
+  );
+
   useEffect(() => {
-    // Reads localStorage after mount to avoid an SSR/client hydration mismatch.
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMember(raw ? (JSON.parse(raw) as Member) : null);
-    setIsLoaded(true);
-  }, []);
+    let active = true;
 
-  const join = useCallback((newMember: Member) => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newMember));
-    setMember(newMember);
-  }, []);
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!active) return;
+      if (user) {
+        await loadProfile(user.id, user.email ?? "");
+      } else {
+        setMember(null);
+        setIsMember(false);
+        setIsAdmin(false);
+      }
+      setIsLoaded(true);
+    });
 
-  const end = useCallback(() => {
-    window.localStorage.removeItem(STORAGE_KEY);
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!active) return;
+      if (session?.user) {
+        await loadProfile(session.user.id, session.user.email ?? "");
+      } else {
+        setMember(null);
+        setIsMember(false);
+        setIsAdmin(false);
+      }
+      setIsLoaded(true);
+    });
+
+    return () => {
+      active = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, [supabase, loadProfile]);
+
+  const signUpWithPassword = useCallback(
+    async ({
+      firstName,
+      lastName,
+      email,
+      password,
+    }: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      password: string;
+    }) => {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { first_name: firstName, last_name: lastName } },
+      });
+
+      if (error) {
+        return {
+          error: /already registered|already exists/i.test(error.message)
+            ? "An account with that email already exists."
+            : error.message || "Something went wrong creating your account.",
+        };
+      }
+
+      // Email confirmation is enabled on the project — signUp succeeds but
+      // returns no session until the confirmation link is clicked.
+      if (!data.session) return { needsConfirmation: true };
+
+      return {};
+    },
+    [supabase],
+  );
+
+  const signInWithPassword = useCallback(
+    async ({ email, password }: { email: string; password: string }) => {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return { error: "Incorrect email or password." };
+      return {};
+    },
+    [supabase],
+  );
+
+  const updateProfile = useCallback(
+    async ({ firstName, lastName }: { firstName: string; lastName: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { error: "Not signed in." };
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ first_name: firstName, last_name: lastName })
+        .eq("id", user.id);
+      if (error) return { error: error.message };
+
+      setMember((prev) => (prev ? { ...prev, firstName, lastName } : prev));
+      return {};
+    },
+    [supabase],
+  );
+
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
     setMember(null);
-  }, []);
+    setIsMember(false);
+    setIsAdmin(false);
+  }, [supabase]);
 
   return (
     <MembershipContext.Provider
-      value={{ isMember: member !== null, isLoaded, member, join, end }}
+      value={{
+        isMember,
+        isAdmin,
+        isLoaded,
+        member,
+        signUpWithPassword,
+        signInWithPassword,
+        updateProfile,
+        signOut,
+      }}
     >
       {children}
     </MembershipContext.Provider>

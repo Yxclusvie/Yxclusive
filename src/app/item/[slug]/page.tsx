@@ -1,12 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getItemBySlug, items } from "@/lib/items";
+import { getItemBySlug } from "@/lib/items";
 import { PurchasePanel } from "@/components/purchase-panel";
-
-export function generateStaticParams() {
-  return items.map((item) => ({ slug: item.slug }));
-}
+import { ProductGallery } from "@/components/product-gallery";
 
 export default async function ItemPage({
   params,
@@ -14,7 +10,7 @@ export default async function ItemPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const item = getItemBySlug(slug);
+  const item = await getItemBySlug(slug);
   if (!item) notFound();
 
   return (
@@ -27,19 +23,7 @@ export default async function ItemPage({
       </Link>
 
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
-        <div
-          className="relative w-full overflow-hidden rounded-sm border border-ink-line bg-paper"
-          style={{ aspectRatio: item.aspect < 1 ? item.aspect : 1 }}
-        >
-          <Image
-            src={item.image}
-            alt={`${item.name} by ${item.maker}`}
-            fill
-            sizes="(max-width: 1024px) 100vw, 55vw"
-            priority
-            className="object-cover"
-          />
-        </div>
+        <ProductGallery images={item.images} alt={`${item.name} by ${item.maker}`} />
 
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-citrus-deep">

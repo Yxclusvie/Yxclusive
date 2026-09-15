@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { stripe } from "@/lib/stripe";
+import { createClient } from "@/lib/supabase/server";
 import { SuccessClient } from "./success-client";
 
 export default async function MembershipSuccessPage({
@@ -16,10 +17,34 @@ export default async function MembershipSuccessPage({
     redirect("/membership");
   }
 
-  const email = session.customer_details?.email ?? "";
-  const name = (session.metadata?.name || session.customer_details?.name || "Yxmember").trim();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!email) redirect("/membership");
+  if (!user) redirect("/membership");
 
-  return <SuccessClient name={name} email={email} />;
+  const stripeCustomerId =
+    typeof session.customer === "string" ? session.customer : session.customer?.id;
+  const stripeSubscriptionId =
+    typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({
+      is_member: true,
+      stripe_customer_id: stripeCustomerId,
+      stripe_subscription_id: stripeSubscriptionId,
+    })
+    .eq("id", user.id);
+
+  if (updateError) {
+    // Payment succeeded but we failed to activate membership — this must not
+    // render a false "you're a member" success state.
+    throw new Error(`Failed to activate membership: ${updateError.message}`);
+  }
+
+  const name = (session.metadata?.name || "").trim() || user.email || "Yxmember";
+
+  return <SuccessClient name={name} />;
 }
