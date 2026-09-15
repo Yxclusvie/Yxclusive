@@ -28,6 +28,8 @@ export default async function EditProductPage({
             description: item.description,
             provenance: item.provenance,
             images: item.images,
+            sold: item.sold,
+            hidden: item.hidden,
           }}
         />
       </div>

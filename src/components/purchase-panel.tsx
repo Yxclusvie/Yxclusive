@@ -9,6 +9,21 @@ export function PurchasePanel({ item }: { item: Item }) {
   const { isMember, isLoaded } = useMembership();
   const [confirmed, setConfirmed] = useState(false);
 
+  if (item.sold) {
+    return (
+      <div className="rounded-sm border-2 border-ink bg-paper p-6">
+        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-soft">Sold</p>
+        <p className="mt-2 font-display text-3xl text-ink line-through decoration-ink-soft/50">
+          ${item.price.toLocaleString()}
+        </p>
+        <p className="mt-3 font-mono text-[10px] leading-relaxed text-ink-soft">
+          This piece has found its next owner. Browse the standing collection for what&rsquo;s
+          still available.
+        </p>
+      </div>
+    );
+  }
+
   if (!isLoaded) {
     return <div className="h-[164px] animate-pulse rounded-sm border border-ink-line bg-paper" />;
   }

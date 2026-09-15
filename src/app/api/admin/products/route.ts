@@ -55,6 +55,8 @@ export async function POST(request: NextRequest) {
       est_retail: Math.round(Number(body.estRetail) || 0),
       description: body.description || null,
       provenance: body.provenance || null,
+      sold: Boolean(body.sold),
+      hidden: Boolean(body.hidden),
     })
     .select("id")
     .single();

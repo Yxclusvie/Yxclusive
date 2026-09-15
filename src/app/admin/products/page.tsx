@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { getItems } from "@/lib/items";
+import { getAllItemsForAdmin } from "@/lib/items";
 import { DeleteProductButton } from "@/components/admin/delete-product-button";
+import { ProductStatusToggles } from "@/components/admin/product-status-toggles";
 
 export default async function AdminProductsPage() {
-  const items = await getItems();
+  const items = await getAllItemsForAdmin();
 
   return (
     <div>
@@ -24,14 +25,29 @@ export default async function AdminProductsPage() {
             <img
               src={item.images[0]?.url}
               alt=""
-              className="h-14 w-14 shrink-0 rounded-sm border border-ink-line object-cover"
+              className={`h-14 w-14 shrink-0 rounded-sm border border-ink-line object-cover ${
+                item.hidden ? "opacity-40" : ""
+              }`}
             />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm text-ink">{item.name}</p>
+              <div className="flex items-center gap-2">
+                <p className="truncate text-sm text-ink">{item.name}</p>
+                {item.sold && (
+                  <span className="shrink-0 rounded-full bg-ink px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-cream">
+                    Sold
+                  </span>
+                )}
+                {item.hidden && (
+                  <span className="shrink-0 rounded-full border border-ink-line px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-ink-soft">
+                    Hidden
+                  </span>
+                )}
+              </div>
               <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-ink-soft">
                 {item.maker} · {item.category} · ${item.price.toLocaleString()}
               </p>
             </div>
+            <ProductStatusToggles id={item.id} sold={item.sold} hidden={item.hidden} />
             <Link
               href={`/admin/products/${item.id}/edit`}
               className="shrink-0 font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"

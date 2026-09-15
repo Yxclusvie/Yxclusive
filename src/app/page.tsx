@@ -77,8 +77,15 @@ export default async function Home() {
                     alt={`${item.name} by ${item.maker}`}
                     fill
                     sizes="(max-width: 640px) 144px, (max-width: 1024px) 192px, 224px"
-                    className="object-cover transition duration-500 hover:scale-[1.04]"
+                    className={`object-cover transition duration-500 hover:scale-[1.04] ${
+                      item.sold ? "grayscale" : ""
+                    }`}
                   />
+                  {item.sold && (
+                    <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-cream">
+                      Sold
+                    </span>
+                  )}
                 </div>
                 <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full border border-ink-line bg-cream/90 px-2 py-1 font-mono text-[10px] text-ink-soft backdrop-blur">
                   <svg

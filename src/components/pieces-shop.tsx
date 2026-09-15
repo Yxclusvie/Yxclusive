@@ -240,8 +240,15 @@ function ProductCard({ item }: { item: Item }) {
             alt={`${item.name} by ${item.maker}`}
             fill
             sizes="(max-width: 1024px) 50vw, 25vw"
-            className="object-cover transition duration-700 ease-out group-hover:scale-[1.04]"
+            className={`object-cover transition duration-700 ease-out group-hover:scale-[1.04] ${
+              item.sold ? "grayscale" : ""
+            }`}
           />
+          {item.sold && (
+            <span className="absolute left-3 top-3 rounded-full bg-ink px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.1em] text-cream">
+              Sold
+            </span>
+          )}
         </div>
 
         <button

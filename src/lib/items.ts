@@ -28,6 +28,8 @@ export type Item = {
   images: ProductImage[];
   description: string;
   provenance: string;
+  sold: boolean;
+  hidden: boolean;
 };
 
 type ProductRow = {
@@ -44,6 +46,8 @@ type ProductRow = {
   likes: number;
   description: string | null;
   provenance: string | null;
+  sold: boolean;
+  hidden: boolean;
   product_images: { url: string; aspect: number; position: number }[];
 };
 
@@ -65,12 +69,25 @@ function toItem(row: ProductRow): Item {
       .map((image) => ({ url: image.url, aspect: image.aspect })),
     description: row.description ?? "",
     provenance: row.provenance ?? "",
+    sold: row.sold,
+    hidden: row.hidden,
   };
 }
 
 const PRODUCT_SELECT = "*, product_images(url, aspect, position)";
 
 export async function getItems(): Promise<Item[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .eq("hidden", false)
+    .order("created_at", { ascending: false });
+
+  return ((data ?? []) as ProductRow[]).map(toItem);
+}
+
+export async function getAllItemsForAdmin(): Promise<Item[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("products")
@@ -86,6 +103,7 @@ export async function getItemBySlug(slug: string): Promise<Item | undefined> {
     .from("products")
     .select(PRODUCT_SELECT)
     .eq("slug", slug)
+    .eq("hidden", false)
     .maybeSingle();
 
   return data ? toItem(data as ProductRow) : undefined;

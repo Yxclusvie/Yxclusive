@@ -27,6 +27,8 @@ export type ProductFormValues = {
   description: string;
   provenance: string;
   images: ProductImage[];
+  sold: boolean;
+  hidden: boolean;
 };
 
 const EMPTY: ProductFormValues = {
@@ -40,6 +42,8 @@ const EMPTY: ProductFormValues = {
   description: "",
   provenance: "",
   images: [],
+  sold: false,
+  hidden: false,
 };
 
 function readImageAspect(file: File): Promise<number> {
@@ -261,6 +265,27 @@ export function ProductForm({ initial }: { initial?: ProductFormValues }) {
           className={inputClass}
         />
       </Field>
+
+      <div className="flex gap-6 font-mono text-[11px] uppercase tracking-[0.12em] text-ink">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={values.sold}
+            onChange={(event) => set("sold", event.target.checked)}
+            className="h-3.5 w-3.5 accent-ink"
+          />
+          Sold
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={values.hidden}
+            onChange={(event) => set("hidden", event.target.checked)}
+            className="h-3.5 w-3.5 accent-ink"
+          />
+          Hidden
+        </label>
+      </div>
 
       {error && (
         <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-red-700">{error}</p>
