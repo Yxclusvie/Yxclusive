@@ -7,7 +7,8 @@ import type { Item } from "@/lib/items";
 
 export function PurchasePanel({ item }: { item: Item }) {
   const { isMember, isLoaded } = useMembership();
-  const [confirmed, setConfirmed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (item.sold) {
     return (
@@ -29,6 +30,31 @@ export function PurchasePanel({ item }: { item: Item }) {
   }
 
   if (isMember) {
+    const handleBuy = async () => {
+      setError(null);
+      setSubmitting(true);
+
+      try {
+        const response = await fetch("/api/checkout/item", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId: item.id }),
+        });
+        const data = await response.json();
+
+        if (!response.ok || !data.url) {
+          setError(data.error ?? "Something went wrong starting checkout.");
+          setSubmitting(false);
+          return;
+        }
+
+        window.location.href = data.url;
+      } catch {
+        setError("Something went wrong starting checkout.");
+        setSubmitting(false);
+      }
+    };
+
     return (
       <div className="rounded-sm border-2 border-ink bg-paper p-6">
         <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-citrus-deep">
@@ -37,20 +63,20 @@ export function PurchasePanel({ item }: { item: Item }) {
         <p className="mt-2 font-display text-3xl text-ink">
           ${item.price.toLocaleString()}
         </p>
-        {confirmed ? (
-          <p className="mt-4 font-mono text-xs uppercase tracking-[0.1em] text-citrus-deep">
-            Reserved. Our concierge will confirm shipping details by email.
+        <button
+          onClick={() => void handleBuy()}
+          disabled={submitting}
+          className="mt-4 w-full rounded-full bg-ink py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {submitting ? "Redirecting to Checkout…" : "Buy Now"}
+        </button>
+        {error && (
+          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.08em] text-red-700">
+            {error}
           </p>
-        ) : (
-          <button
-            onClick={() => setConfirmed(true)}
-            className="mt-4 w-full rounded-full bg-ink py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft"
-          >
-            Reserve This Lot
-          </button>
         )}
         <p className="mt-3 font-mono text-[10px] leading-relaxed text-ink-soft">
-          Checkout and payment are not yet connected — this confirms interest only.
+          You&rsquo;ll be redirected to Stripe to complete payment securely.
         </p>
       </div>
     );
