@@ -13,7 +13,15 @@ export default async function EditProductPage({
 
   return (
     <div>
-      <p className="font-display text-2xl text-ink">Edit Product</p>
+      <div className="flex items-center justify-between">
+        <p className="font-display text-2xl text-ink">Edit Product</p>
+        <a
+          href={`/api/admin/products/${item.id}/share-image`}
+          className="font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"
+        >
+          Download Share Image
+        </a>
+      </div>
       <div className="mt-6">
         <ProductForm
           initial={{
@@ -23,6 +31,7 @@ export default async function EditProductPage({
             category: item.category,
             era: item.era,
             condition: item.condition,
+            size: item.size,
             price: item.price,
             estRetail: item.estRetail,
             description: item.description,

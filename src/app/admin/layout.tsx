@@ -19,11 +19,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!profile?.is_admin) redirect("/");
 
   return (
-    <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-8 sm:px-10 sm:pb-24 sm:pt-12">
-      <div className="flex items-center justify-between border-b border-ink-line pb-4">
-        <Link href="/admin/products" className="font-display text-xl text-ink">
+    <div className="min-h-dvh bg-citrus">
+      <div className="fixed left-1/2 top-4 z-40 flex -translate-x-1/2 items-center gap-3 sm:top-6">
+        <Link href="/admin/products" className="font-display text-base text-ink sm:text-lg">
           Inventory
         </Link>
+        <span className="text-ink-line">·</span>
         <Link
           href="/"
           className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft underline underline-offset-4 transition hover:text-ink"
@@ -32,7 +33,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </Link>
       </div>
 
-      <div className="mt-8">{children}</div>
+      <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-6 sm:px-10 sm:pb-24 sm:pt-8 lg:pl-36 lg:pr-32">
+        {children}
+      </div>
     </div>
   );
 }

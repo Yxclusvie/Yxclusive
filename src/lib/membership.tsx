@@ -21,7 +21,12 @@ type MembershipState = {
     password: string;
   }) => Promise<{ error?: string; needsConfirmation?: boolean }>;
   signInWithPassword: (input: { email: string; password: string }) => Promise<{ error?: string }>;
+  resetPasswordForEmail: (email: string) => Promise<{ error?: string }>;
   updateProfile: (input: { firstName: string; lastName: string }) => Promise<{ error?: string }>;
+  updatePassword: (input: {
+    currentPassword: string;
+    newPassword: string;
+  }) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
 };
 
@@ -52,6 +57,19 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
     },
     [supabase],
   );
+
+  useEffect(() => {
+    // Some recovery emails (e.g. a dashboard-triggered "Reset password")
+    // redirect to the site's root instead of /reset-password, carrying the
+    // session directly in the URL hash. Catch that here, on every page,
+    // before the hash is lost, and forward it to the page that can use it.
+    if (
+      window.location.pathname !== "/reset-password" &&
+      window.location.hash.includes("type=recovery")
+    ) {
+      window.location.replace(`/reset-password${window.location.hash}`);
+    }
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -130,6 +148,17 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
     [supabase],
   );
 
+  const resetPasswordForEmail = useCallback(
+    async (email: string) => {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) return { error: error.message || "Something went wrong sending that email." };
+      return {};
+    },
+    [supabase],
+  );
+
   const updateProfile = useCallback(
     async ({ firstName, lastName }: { firstName: string; lastName: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -142,6 +171,25 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
       if (error) return { error: error.message };
 
       setMember((prev) => (prev ? { ...prev, firstName, lastName } : prev));
+      return {};
+    },
+    [supabase],
+  );
+
+  const updatePassword = useCallback(
+    async ({ currentPassword, newPassword }: { currentPassword: string; newPassword: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) return { error: "Not signed in." };
+
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+      if (verifyError) return { error: "Current password is incorrect." };
+
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      if (updateError) return { error: updateError.message };
+
       return {};
     },
     [supabase],
@@ -163,7 +211,9 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
         member,
         signUpWithPassword,
         signInWithPassword,
+        resetPasswordForEmail,
         updateProfile,
+        updatePassword,
         signOut,
       }}
     >

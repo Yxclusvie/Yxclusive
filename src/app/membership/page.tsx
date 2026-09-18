@@ -10,11 +10,18 @@ const FEATURES = [
   "Invited to the latest events & activations.",
 ];
 
-type Mode = "signIn" | "signUp";
+type Mode = "signIn" | "signUp" | "forgotPassword";
 
 export default function MembershipPage() {
-  const { isMember, isLoaded, member, signUpWithPassword, signInWithPassword, signOut } =
-    useMembership();
+  const {
+    isMember,
+    isLoaded,
+    member,
+    signUpWithPassword,
+    signInWithPassword,
+    resetPasswordForEmail,
+    signOut,
+  } = useMembership();
 
   const [mode, setMode] = useState<Mode>("signIn");
   const [firstName, setFirstName] = useState("");
@@ -24,6 +31,7 @@ export default function MembershipPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const isSignedIn = isLoaded && member !== null;
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -123,10 +131,36 @@ export default function MembershipPage() {
     setError(null);
     setPassword("");
     setNeedsConfirmation(false);
+    setResetSent(false);
+  };
+
+  const handleForgotPassword = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const trimmedEmail = email.trim();
+    if (!emailPattern.test(trimmedEmail)) {
+      setError("Enter a valid email address.");
+      return;
+    }
+
+    setError(null);
+    setSubmitting(true);
+
+    const { error: resetError } = await resetPasswordForEmail(trimmedEmail);
+
+    if (resetError) {
+      setError(resetError);
+      setSubmitting(false);
+      return;
+    }
+
+    setResetSent(true);
+    setSubmitting(false);
   };
 
   return (
-    <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-8 sm:px-10 sm:pb-24 sm:pt-12">
+    <div className="bg-citrus">
+    <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-24 sm:px-10 sm:pb-24 lg:pt-36">
       <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
         <div className="relative w-full overflow-hidden rounded-sm border border-ink-line bg-paper">
           <div className="relative w-full" style={{ aspectRatio: "4/5" }}>
@@ -245,6 +279,52 @@ export default function MembershipPage() {
                         Go to sign in
                       </button>
                     </div>
+                  ) : mode === "forgotPassword" ? (
+                    resetSent ? (
+                      <div className="mt-4">
+                        <p className="text-sm leading-relaxed text-ink">
+                          Check <span className="font-medium">{email.trim()}</span> for a link to
+                          reset your password.
+                        </p>
+                        <button
+                          onClick={() => switchMode("signIn")}
+                          className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"
+                        >
+                          Go to sign in
+                        </button>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleForgotPassword} className="mt-4 space-y-3">
+                        <p className="text-sm leading-relaxed text-ink-soft">
+                          Enter your email and we&rsquo;ll send you a link to reset your
+                          password.
+                        </p>
+                        <Field label="Email" htmlFor="forgot-email">
+                          <input
+                            id="forgot-email"
+                            type="email"
+                            value={email}
+                            onChange={(event) => setEmail(event.target.value)}
+                            placeholder="jordan@example.com"
+                            className={inputClass}
+                          />
+                        </Field>
+
+                        {error && <ErrorText>{error}</ErrorText>}
+
+                        <SubmitButton submitting={submitting}>
+                          {submitting ? "Sending…" : "Send Reset Link"}
+                        </SubmitButton>
+
+                        <button
+                          type="button"
+                          onClick={() => switchMode("signIn")}
+                          className="w-full font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft underline underline-offset-4"
+                        >
+                          Back to sign in
+                        </button>
+                      </form>
+                    )
                   ) : mode === "signIn" ? (
                     <form onSubmit={handleSignIn} className="mt-4 space-y-3">
                       <Field label="Email" htmlFor="email">
@@ -267,6 +347,14 @@ export default function MembershipPage() {
                           className={inputClass}
                         />
                       </Field>
+
+                      <button
+                        type="button"
+                        onClick={() => switchMode("forgotPassword")}
+                        className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft underline underline-offset-4"
+                      >
+                        Forgot password?
+                      </button>
 
                       {error && <ErrorText>{error}</ErrorText>}
 
@@ -338,6 +426,7 @@ export default function MembershipPage() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

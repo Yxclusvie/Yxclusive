@@ -22,6 +22,7 @@ export type ProductFormValues = {
   category: Category;
   era: string;
   condition: Item["condition"];
+  size: string;
   price: number;
   estRetail: number;
   description: string;
@@ -37,6 +38,7 @@ const EMPTY: ProductFormValues = {
   category: "Bags",
   era: "",
   condition: "Excellent",
+  size: "",
   price: 0,
   estRetail: 0,
   description: "",
@@ -227,7 +229,14 @@ export function ProductForm({ initial }: { initial?: ProductFormValues }) {
             className={inputClass}
           />
         </Field>
-        <div />
+        <Field label="Size">
+          <input
+            value={values.size}
+            onChange={(event) => set("size", event.target.value)}
+            placeholder="e.g. 50, or Medium"
+            className={inputClass}
+          />
+        </Field>
         <Field label="Price ($)">
           <input
             type="number"

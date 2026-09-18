@@ -14,16 +14,31 @@ export default async function ItemPage({
   if (!item) notFound();
 
   return (
-    <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-8 sm:px-10 sm:pb-24 sm:pt-10">
+    <div className="min-h-dvh bg-citrus">
+    <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-10 sm:px-10 sm:pb-24 sm:pt-14 lg:pt-8 lg:pl-36 lg:pr-32">
       <Link
         href="/pieces"
-        className="font-mono text-[11px] uppercase tracking-[0.16em] text-ink-soft transition hover:text-citrus-deep"
+        className="hidden font-mono text-[11px] uppercase tracking-[0.16em] text-ink-soft transition hover:text-citrus-deep lg:block"
+      >
+        ← Back to the Pieces
+      </Link>
+
+      <Link
+        href="/pieces"
+        className="fixed left-1/2 top-[34px] z-40 -translate-x-1/2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft transition hover:text-citrus-deep lg:hidden"
       >
         ← Back to the Pieces
       </Link>
 
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
-        <ProductGallery images={item.images} alt={`${item.name} by ${item.maker}`} />
+        <ProductGallery
+          images={item.images}
+          alt={`${item.name} by ${item.maker}`}
+          name={item.name}
+          size={item.size}
+          price={item.price}
+          estRetail={item.estRetail}
+        />
 
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-citrus-deep">
@@ -36,7 +51,11 @@ export default async function ItemPage({
             {item.maker} · {item.era}
           </p>
 
-          <dl className="mt-6 grid grid-cols-3 gap-4 border-y border-ink-line py-4 font-mono text-xs uppercase tracking-[0.08em] text-ink-soft">
+          <dl
+            className={`mt-6 grid gap-4 border-y border-ink-line py-4 font-mono text-xs uppercase tracking-[0.08em] text-ink-soft ${
+              item.size ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3"
+            }`}
+          >
             <div>
               <dt className="text-ink-soft/70">Condition</dt>
               <dd className="mt-1 text-ink">{item.condition}</dd>
@@ -49,6 +68,12 @@ export default async function ItemPage({
               <dt className="text-ink-soft/70">Category</dt>
               <dd className="mt-1 text-ink">{item.category}</dd>
             </div>
+            {item.size && (
+              <div>
+                <dt className="text-ink-soft/70">Size</dt>
+                <dd className="mt-1 text-ink">{item.size}</dd>
+              </div>
+            )}
           </dl>
 
           <p className="mt-6 text-[15px] leading-relaxed text-ink-soft">
@@ -64,6 +89,7 @@ export default async function ItemPage({
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

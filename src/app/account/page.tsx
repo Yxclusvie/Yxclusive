@@ -1,16 +1,23 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { useMembership } from "@/lib/membership";
 
 export default function ProfilePage() {
-  const { member, updateProfile } = useMembership();
+  const { member, updateProfile, updatePassword, signOut } = useMembership();
   const [editing, setEditing] = useState(false);
   const [firstName, setFirstName] = useState(member?.firstName ?? "");
   const [lastName, setLastName] = useState(member?.lastName ?? "");
   const [error, setError] = useState<string | null>(null);
   const [marketingEmail, setMarketingEmail] = useState(false);
+
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordSaved, setPasswordSaved] = useState(false);
 
   if (!member) return null;
 
@@ -33,23 +40,45 @@ export default function ProfilePage() {
     setEditing(false);
   };
 
+  const handleChangePassword = async () => {
+    if (newPassword.length < 8) {
+      setPasswordError("New password must be at least 8 characters.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New passwords don’t match.");
+      return;
+    }
+
+    setPasswordSaving(true);
+    const { error: updateError } = await updatePassword({ currentPassword, newPassword });
+    setPasswordSaving(false);
+
+    if (updateError) {
+      setPasswordError(updateError);
+      return;
+    }
+
+    setPasswordError(null);
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setChangingPassword(false);
+    setPasswordSaved(true);
+    setTimeout(() => setPasswordSaved(false), 2500);
+  };
+
   return (
-    <div>
-      <div className="rounded-sm border border-ink-line bg-paper p-6">
-        <p className="font-display text-2xl text-ink">Hi, {displayFirstName}</p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link
-            href="/pieces"
-            className="rounded-full bg-ink px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft"
+    <div className="mx-auto max-w-3xl">
+      <div className="rounded-sm border border-ink-line bg-paper px-6 py-3.5">
+        <div className="flex items-center justify-between">
+          <p className="font-display text-lg text-ink">Hi, {displayFirstName}</p>
+          <button
+            onClick={() => void signOut()}
+            className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft underline underline-offset-4 transition hover:text-ink"
           >
-            Shop the Pieces
-          </Link>
-          <Link
-            href="/looks"
-            className="rounded-full bg-ink px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft"
-          >
-            See the Looks
-          </Link>
+            Sign out
+          </button>
         </div>
       </div>
 
@@ -110,6 +139,81 @@ export default function ProfilePage() {
             Email
           </p>
           <p className="text-sm text-ink">{member.email}</p>
+        </div>
+      )}
+
+      <div className="mt-10 flex items-baseline justify-between">
+        <p className="font-display text-xl text-ink">Password</p>
+        <button
+          onClick={() => {
+            setCurrentPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+            setPasswordError(null);
+            setChangingPassword((prev) => !prev);
+          }}
+          className="font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"
+        >
+          {changingPassword ? "Cancel" : "Change"}
+        </button>
+      </div>
+
+      {changingPassword ? (
+        <div className="mt-3 space-y-3 rounded-sm border border-ink-line bg-paper p-5">
+          <div>
+            <label className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
+              Current password
+            </label>
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(event) => setCurrentPassword(event.target.value)}
+              className="mt-1.5 w-full rounded-sm border border-ink-line bg-cream px-3 py-2.5 text-sm text-ink outline-none focus:border-ink"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
+                New password
+              </label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                placeholder="At least 8 characters"
+                className="mt-1.5 w-full rounded-sm border border-ink-line bg-cream px-3 py-2.5 text-sm text-ink outline-none focus:border-ink"
+              />
+            </div>
+            <div>
+              <label className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
+                Confirm new password
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                className="mt-1.5 w-full rounded-sm border border-ink-line bg-cream px-3 py-2.5 text-sm text-ink outline-none focus:border-ink"
+              />
+            </div>
+          </div>
+          {passwordError && (
+            <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-red-700">
+              {passwordError}
+            </p>
+          )}
+          <button
+            onClick={() => void handleChangePassword()}
+            disabled={passwordSaving}
+            className="rounded-full bg-ink px-5 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {passwordSaving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      ) : (
+        <div className="mt-3 flex items-center justify-between rounded-sm border border-ink-line bg-paper px-5 py-4">
+          <p className="text-sm text-ink">
+            {passwordSaved ? "Password updated." : "••••••••"}
+          </p>
         </div>
       )}
 

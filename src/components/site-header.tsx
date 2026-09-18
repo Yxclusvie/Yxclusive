@@ -5,17 +5,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useMembership } from "@/lib/membership";
+import { BrandMark } from "@/components/brand-mark";
 
-const NAV = [
-  { href: "/looks", label: "Looks" },
-  { href: "/pieces", label: "Pieces" },
-  { href: "/membership", label: "Membership" },
+const ACCOUNT_SUBNAV = [
+  { href: "/account", label: "Profile" },
+  { href: "/account/sell", label: "Sell" },
+  { href: "/account/purchases", label: "Purchases" },
+  { href: "/account/selling-activity", label: "Selling Activity" },
 ];
 
 export function SiteHeader() {
-  const { isMember, isLoaded } = useMembership();
+  const { isMember, isAdmin, isLoaded } = useMembership();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountNavOpen, setAccountNavOpen] = useState(false);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -25,121 +28,176 @@ export function SiteHeader() {
     };
   }, [menuOpen]);
 
+  const navLinks =
+    isLoaded && isMember
+      ? [
+          { href: "/", label: "Home" },
+          { href: "/about", label: "About" },
+          { href: "/pieces", label: "Pieces" },
+          { href: "/account", label: "Yxmember" },
+        ]
+      : [
+          { href: "/", label: "Home" },
+          { href: "/about", label: "About" },
+          { href: "/pieces", label: "Pieces" },
+          { href: "/membership", label: "Yxmember" },
+        ];
+
   return (
-    <header className="relative z-40 border-b border-ink/15 bg-citrus">
-      <div className="mx-auto flex max-w-[1400px] items-center gap-6 px-5 py-3 sm:px-10 sm:py-4">
-        <button
-          type="button"
-          onClick={() => setMenuOpen((prev) => !prev)}
-          aria-expanded={menuOpen}
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          className="flex h-9 w-9 shrink-0 items-center justify-center text-cream lg:hidden"
-        >
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
-            {menuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6L6 18" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16M4 12h16M4 17h16" />
-            )}
-          </svg>
-        </button>
-
-        <Link
-          href="/"
-          className="flex flex-1 justify-center lg:flex-none lg:justify-start"
-          onClick={() => setMenuOpen(false)}
-        >
-          <Image
-            src="/logo-white.png"
-            alt="Xclusive"
-            width={1220}
-            height={645}
-            priority
-            className="h-10 w-auto sm:h-16 lg:h-20"
-          />
-        </Link>
-
-        <nav className="hidden flex-1 items-center justify-center gap-8 text-lg font-medium uppercase tracking-[0.06em] text-cream lg:flex">
-          {NAV.map((link) => {
+    <>
+      <nav className="fixed left-4 top-4 z-40 hidden sm:left-6 sm:top-6 lg:block">
+        <ul className="flex flex-col gap-1 font-mono text-[11px] uppercase tracking-[0.14em] text-cream [text-shadow:0_1px_4px_rgba(0,0,0,0.55)]">
+          {navLinks.map((link) => {
             const active = pathname === link.href;
             return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`rounded-full px-4 py-1.5 leading-none transition ${
-                  active
-                    ? "bg-ink text-cream"
-                    : "text-cream hover:bg-cream/15"
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="flex shrink-0 items-center gap-3 text-lg font-medium uppercase tracking-[0.06em]">
-          {isLoaded && isMember ? (
-            <Link
-              href="/account"
-              className="flex items-center gap-2 rounded-full border border-ink/60 bg-cream px-3 py-1.5 text-xs leading-none text-ink transition hover:bg-paper sm:px-5 sm:py-2 sm:text-lg"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
-              <span className="hidden sm:inline">Yxmember</span>
-            </Link>
-          ) : (
-            <Link
-              href="/membership"
-              className="rounded-full bg-ink px-3 py-1.5 text-xs leading-none text-cream transition hover:bg-ink-soft sm:px-5 sm:py-2 sm:text-lg"
-            >
-              Join
-            </Link>
-          )}
-        </div>
-      </div>
-
-      {menuOpen && (
-        <nav className="fixed inset-0 top-[57px] z-30 flex flex-col overflow-y-auto bg-citrus px-6 py-8 sm:top-[73px] lg:hidden">
-          <div className="flex flex-col gap-1 text-2xl leading-tight text-ink">
-            {NAV.map((link) => {
-              const active = pathname === link.href;
-              return (
+              <li key={link.label}>
                 <Link
-                  key={link.href}
                   href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  className={`border-b border-ink/15 py-4 transition ${
-                    active ? "text-ink" : "text-ink/70 hover:text-ink"
+                  onClick={() => {
+                    if (link.label === "Yxmember") setAccountNavOpen((prev) => !prev);
+                  }}
+                  className={`inline-block py-0.5 transition ${
+                    active ? "underline underline-offset-4" : "opacity-90 hover:opacity-100"
                   }`}
                 >
                   {link.label}
                 </Link>
+                {link.label === "Yxmember" && pathname.startsWith("/account") && accountNavOpen && (
+                  <ul className="mt-0.5 flex flex-col gap-0.5 border-l border-cream/30 pl-2 text-[9px] tracking-[0.1em]">
+                    {ACCOUNT_SUBNAV.map((sub) => (
+                      <li key={sub.href}>
+                        <Link
+                          href={sub.href}
+                          onClick={() => setAccountNavOpen(false)}
+                          className={`inline-block py-0.5 transition ${
+                            pathname === sub.href
+                              ? "underline underline-offset-4"
+                              : "opacity-75 hover:opacity-100"
+                          }`}
+                        >
+                          {sub.label}
+                        </Link>
+                      </li>
+                    ))}
+                    {isAdmin && (
+                      <li>
+                        <Link
+                          href="/admin/products"
+                          onClick={() => setAccountNavOpen(false)}
+                          className="inline-block py-0.5 text-[11px] tracking-[0.14em] opacity-90 transition hover:opacity-100"
+                        >
+                          Manage Inventory →
+                        </Link>
+                      </li>
+                    )}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      <button
+        type="button"
+        onClick={() => {
+          setMenuOpen((prev) => !prev);
+          setAccountNavOpen(false);
+        }}
+        aria-expanded={menuOpen}
+        aria-label={menuOpen ? "Close menu" : "Open menu"}
+        className="fixed left-4 top-4 z-40 flex h-14 items-center justify-center px-1 text-cream lg:hidden"
+      >
+        {menuOpen ? (
+          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        ) : (
+          <Image
+            src="/logo-white.png"
+            alt="Yxclusive menu"
+            width={1220}
+            height={645}
+            className="h-8 w-auto drop-shadow-[0_1px_4px_rgba(0,0,0,0.55)]"
+          />
+        )}
+      </button>
+
+      <Link
+        href="/"
+        aria-label="Yxclusive home"
+        className="fixed right-4 top-4 z-40 block"
+        onClick={() => setMenuOpen(false)}
+      >
+        <BrandMark
+          signedIn={isLoaded && isMember}
+          className="h-11 w-11 drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)] sm:h-14 sm:w-14"
+        />
+      </Link>
+
+      {menuOpen && (
+        <nav className="fixed inset-0 z-30 flex flex-col items-center justify-center bg-ink/50 backdrop-blur-lg lg:hidden">
+          <div className="flex flex-col items-center gap-1 font-mono text-[11px] uppercase tracking-[0.14em] text-cream [text-shadow:0_1px_4px_rgba(0,0,0,0.55)]">
+            {navLinks.map((link) => {
+              const active = pathname === link.href;
+              const isYxmember = link.label === "Yxmember";
+              return (
+                <div key={link.label} className="flex flex-col items-center">
+                  <Link
+                    href={link.href}
+                    onClick={(event) => {
+                      if (isYxmember && isMember) {
+                        event.preventDefault();
+                        setAccountNavOpen((prev) => !prev);
+                      } else {
+                        setMenuOpen(false);
+                      }
+                    }}
+                    className={`inline-block py-0.5 transition ${
+                      active ? "underline underline-offset-4" : "opacity-90 hover:opacity-100"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                  {isYxmember && isMember && accountNavOpen && (
+                    <div className="mt-1 flex flex-col items-center gap-1 text-[10px] tracking-[0.1em]">
+                      {ACCOUNT_SUBNAV.map((sub) => (
+                        <Link
+                          key={sub.href}
+                          href={sub.href}
+                          onClick={() => {
+                            setMenuOpen(false);
+                            setAccountNavOpen(false);
+                          }}
+                          className={`inline-block py-0.5 transition ${
+                            pathname === sub.href
+                              ? "underline underline-offset-4"
+                              : "opacity-75 hover:opacity-100"
+                          }`}
+                        >
+                          {sub.label}
+                        </Link>
+                      ))}
+                      {isAdmin && (
+                        <Link
+                          href="/admin/products"
+                          onClick={() => {
+                            setMenuOpen(false);
+                            setAccountNavOpen(false);
+                          }}
+                          className="inline-block py-0.5 opacity-90 transition hover:opacity-100"
+                        >
+                          Manage Inventory →
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
-
-          <div className="mt-8">
-            {isLoaded && isMember ? (
-              <Link
-                href="/account"
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center justify-center gap-2 rounded-full border border-ink/60 bg-cream px-5 py-3 text-sm font-medium uppercase tracking-[0.12em] leading-none text-ink transition hover:bg-paper"
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
-                Yxmember — My Account
-              </Link>
-            ) : (
-              <Link
-                href="/membership"
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-medium uppercase tracking-[0.12em] leading-none text-cream transition hover:bg-ink-soft"
-              >
-                Become a Yxmember
-              </Link>
-            )}
-          </div>
         </nav>
       )}
-    </header>
+    </>
   );
 }

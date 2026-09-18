@@ -22,6 +22,7 @@ export type Item = {
   category: Category;
   era: string;
   condition: "Brand New" | "Excellent" | "Very Good";
+  size: string;
   price: number;
   estRetail: number;
   likes: number;
@@ -41,6 +42,7 @@ type ProductRow = {
   category: Category;
   era: string | null;
   condition: Item["condition"];
+  size: string | null;
   price: number;
   est_retail: number;
   likes: number;
@@ -61,6 +63,7 @@ function toItem(row: ProductRow): Item {
     category: row.category,
     era: row.era ?? "",
     condition: row.condition,
+    size: row.size ?? "",
     price: row.price,
     estRetail: row.est_retail,
     likes: row.likes,

@@ -10,8 +10,10 @@ export default async function PiecesPage({
   const items = await getItems();
 
   return (
-    <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-8 sm:px-10 sm:pb-24 sm:pt-12">
-      <PiecesShop items={items} initialCategory={category} />
+    <div className="bg-citrus">
+      <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-24 sm:px-10 sm:pb-24 lg:px-24 lg:pt-8">
+        <PiecesShop items={items} initialCategory={category} />
+      </div>
     </div>
   );
 }

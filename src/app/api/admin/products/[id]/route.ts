@@ -25,6 +25,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     fields.category = body.category;
     fields.era = body.era || null;
     fields.condition = body.condition;
+    fields.size = body.size || null;
     fields.price = Math.round(Number(body.price) || 0);
     fields.est_retail = Math.round(Number(body.estRetail) || 0);
     fields.description = body.description || null;

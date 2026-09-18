@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
       category: body.category,
       era: body.era || null,
       condition: body.condition,
+      size: body.size || null,
       price: Math.round(Number(body.price) || 0),
       est_retail: Math.round(Number(body.estRetail) || 0),
       description: body.description || null,

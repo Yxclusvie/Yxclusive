@@ -37,7 +37,8 @@ const look = (slot: string) => LOOKS.find((l) => l.slot === slot)!;
 
 export default function LooksPage() {
   return (
-    <div className="mx-auto max-w-[1400px] px-5 pb-12 pt-8 sm:px-10 sm:pt-12">
+    <div className="bg-citrus">
+    <div className="mx-auto max-w-[1400px] px-5 pb-12 pt-24 sm:px-10 lg:pt-36">
       <div className="mb-8 max-w-4xl sm:mb-10">
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-citrus-deep">
           Looks
@@ -71,6 +72,7 @@ export default function LooksPage() {
           className="aspect-[4/5] lg:aspect-auto lg:col-span-3 lg:col-start-10 lg:row-span-2 lg:row-start-3"
         />
       </div>
+    </div>
     </div>
   );
 }

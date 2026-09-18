@@ -1,15 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --color-citrus: #6c3baa;
-  --color-citrus-deep: #512c80;
-  --color-citrus-soft: #9f80c8;
+  --color-citrus: #939190;
+  --color-citrus-deep: #92400e;
+  --color-citrus-soft: #f7b267;
   --color-ink: #1c1712;
   --color-ink-soft: #4a4038;
   --color-ink-line: rgba(28, 23, 18, 0.16);
   --color-paper: #f7f1e7;
   --color-paper-dim: #ece1ce;
   --color-cream: #fbf7ef;
+  --color-mark-red: #dc2626;
 }
 
 @theme inline {
@@ -22,6 +23,7 @@
   --color-paper: var(--color-paper);
   --color-paper-dim: var(--color-paper-dim);
   --color-cream: var(--color-cream);
+  --color-mark-red: var(--color-mark-red);
 
   --font-display: var(--font-fraunces);
   --font-sans: var(--font-inter);
