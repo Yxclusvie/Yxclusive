@@ -1,19 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type Status = "idle" | "verifying" | "failed";
 
-export default function ConfirmResetPage() {
+function ConfirmResetContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [supabase] = useState(() => createClient());
   const [status, setStatus] = useState<Status>("idle");
-  const [tokenHash] = useState(
-    () => new URLSearchParams(window.location.search).get("token_hash"),
-  );
+  const tokenHash = searchParams.get("token_hash");
 
   const handleConfirm = async () => {
     if (!tokenHash) {
@@ -72,5 +71,13 @@ export default function ConfirmResetPage() {
         {status === "verifying" ? "Confirming…" : "Continue"}
       </button>
     </div>
+  );
+}
+
+export default function ConfirmResetPage() {
+  return (
+    <Suspense fallback={null}>
+      <ConfirmResetContent />
+    </Suspense>
   );
 }
