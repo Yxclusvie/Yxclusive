@@ -56,18 +56,26 @@ export function PieceCardMedia({
         }`}
       >
         <p
-          className={`font-sans font-semibold leading-snug text-cream ${
-            compact ? "text-sm" : "text-lg sm:text-xl"
+          className={`font-sans leading-snug text-cream ${
+            compact ? "text-xs font-light" : "text-lg font-semibold sm:text-xl"
           }`}
         >
           {name}
         </p>
         {size && (
-          <p className={`text-cream ${compact ? "mt-1 text-xs" : "mt-3 text-sm sm:text-base"}`}>
+          <p
+            className={`text-cream ${
+              compact ? "mt-1 hidden text-xs lg:block" : "mt-3 text-sm sm:text-base"
+            }`}
+          >
             Size {size}
           </p>
         )}
-        <p className={`text-cream ${compact ? "mt-1 text-xs leading-snug" : "mt-3 text-sm sm:text-base"}`}>
+        <p
+          className={`text-cream ${
+            compact ? "mt-1 hidden text-xs leading-snug lg:block" : "mt-3 text-sm sm:text-base"
+          }`}
+        >
           Retail ${estRetail.toLocaleString()}
           {compact ? <br /> : <>&nbsp;&nbsp;</>}
           YXmember ${price.toLocaleString()}
@@ -77,7 +85,7 @@ export function PieceCardMedia({
       {otherImages.length > 0 && (
         <div
           className={`absolute flex ${
-            compact ? "bottom-3 right-3 gap-1.5" : "bottom-4 right-4 gap-2 sm:bottom-6 sm:right-6"
+            compact ? "bottom-3 right-3 hidden gap-1.5 lg:flex" : "bottom-4 right-4 gap-2 sm:bottom-6 sm:right-6"
           }`}
         >
           {otherImages.map(({ url, index }) =>

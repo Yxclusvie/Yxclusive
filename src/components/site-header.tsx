@@ -84,7 +84,7 @@ export function SiteHeader() {
                         <Link
                           href="/admin/products"
                           onClick={() => setAccountNavOpen(false)}
-                          className="inline-block py-0.5 text-[11px] tracking-[0.14em] opacity-90 transition hover:opacity-100"
+                          className="inline-block py-0.5 opacity-75 transition hover:opacity-100"
                         >
                           Manage Inventory →
                         </Link>

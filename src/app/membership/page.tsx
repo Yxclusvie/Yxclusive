@@ -5,8 +5,7 @@ import { useState } from "react";
 import { useMembership } from "@/lib/membership";
 
 const FEATURES = [
-  "No commission! Keep every dollar you make.",
-  "Enjoy 10% off every purchase.",
+  "Keep 95% of every sale — the 5% commission covers transaction fees and others.",
   "Invited to the latest events & activations.",
 ];
 
@@ -160,31 +159,32 @@ export default function MembershipPage() {
 
   return (
     <div className="bg-citrus">
-    <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-24 sm:px-10 sm:pb-24 lg:pt-36">
-      <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+    <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-24 sm:px-10 sm:pb-24 lg:pl-36 lg:pr-32 lg:pt-8">
+      <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-stretch lg:gap-16">
         <div className="relative w-full overflow-hidden rounded-sm border border-ink-line bg-paper">
-          <div className="relative w-full" style={{ aspectRatio: "4/5" }}>
+          <div className="relative aspect-[4/5] w-full lg:h-full lg:aspect-auto">
             <Image
-              src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1200&auto=format&fit=crop"
-              alt="A rack of clothing ready for its next owner"
+              src="/membership-hero-bags.jpg"
+              alt="A collection of designer bags and accessories laid out, ready for their next owner"
               fill
-              sizes="(max-width: 1024px) 90vw, 45vw"
-              className="object-cover grayscale"
+              sizes="(max-width: 1024px) 90vw, 55vw"
+              className="object-cover"
+              priority
             />
           </div>
         </div>
 
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-citrus-deep">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-citrus-deep">
             Membership
           </p>
-          <h1 className="mt-3 font-display text-3xl leading-[1.1] text-ink sm:text-4xl">
+          <h1 className="mt-2 font-display text-xl leading-[1.15] text-ink sm:text-2xl">
             Ready for your piece to have a new life? Become a Yxmember and pass your piece to
             its next journey.
           </h1>
 
           {isSignedIn && member && (
-            <div className="mt-6 flex items-center justify-between rounded-sm border border-ink/40 bg-paper px-5 py-4">
+            <div className="mt-4 flex items-center justify-between rounded-sm border border-ink/40 bg-paper px-4 py-3">
               <p className="font-mono text-xs uppercase tracking-[0.12em] text-ink">
                 {isMember
                   ? `You're a Yxmember, ${member.firstName || member.email} — selling is unlocked.`
@@ -199,21 +199,21 @@ export default function MembershipPage() {
             </div>
           )}
 
-          <div className="mt-8 rounded-sm border-2 border-ink bg-paper">
-            <div className="border-b-2 border-ink px-6 py-4">
-              <p className="font-marker text-2xl text-ink">Yxmember</p>
+          <div className="mt-5 rounded-sm border-2 border-ink bg-paper">
+            <div className="border-b-2 border-ink px-5 py-3">
+              <p className="font-marker text-xl text-ink">Yxmember</p>
             </div>
-            <div className="px-6 py-6">
+            <div className="px-5 py-4">
               <p className="flex items-baseline gap-1">
-                <span className="font-display text-4xl text-ink">$20</span>
+                <span className="font-display text-3xl text-ink">$20</span>
                 <span className="font-mono text-xs text-ink-soft">/ month</span>
               </p>
 
-              <ul className="mt-6 space-y-3">
+              <ul className="mt-4 space-y-2">
                 {FEATURES.map((feature) => (
                   <li
                     key={feature}
-                    className="flex gap-2 text-sm leading-relaxed text-ink-soft"
+                    className="flex gap-2 text-xs leading-relaxed text-ink-soft"
                   >
                     <span className="text-citrus-deep">—</span>
                     {feature}
@@ -224,12 +224,12 @@ export default function MembershipPage() {
               {isMember ? (
                 <button
                   disabled
-                  className="mt-7 w-full cursor-not-allowed rounded-full bg-ink py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cream opacity-40"
+                  className="mt-5 w-full cursor-not-allowed rounded-full bg-ink py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-cream opacity-40"
                 >
                   Already a Yxmember
                 </button>
               ) : isSignedIn ? (
-                <div className="mt-7 border-t border-ink-line pt-6">
+                <div className="mt-5 border-t border-ink-line pt-4">
                   {error && (
                     <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.08em] text-red-700">
                       {error}
@@ -238,13 +238,13 @@ export default function MembershipPage() {
                   <button
                     onClick={handleCheckout}
                     disabled={submitting}
-                    className="w-full rounded-full bg-ink py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-full bg-ink py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {submitting ? "Redirecting to Checkout…" : "Become a Yxmember"}
                   </button>
                 </div>
               ) : (
-                <div className="mt-7 border-t border-ink-line pt-6">
+                <div className="mt-5 border-t border-ink-line pt-4">
                   <div className="flex gap-1 font-mono text-[11px] uppercase tracking-[0.12em]">
                     <button
                       type="button"
@@ -267,35 +267,35 @@ export default function MembershipPage() {
                   </div>
 
                   {mode === "signUp" && needsConfirmation ? (
-                    <div className="mt-4">
-                      <p className="text-sm leading-relaxed text-ink">
+                    <div className="mt-3">
+                      <p className="text-xs leading-relaxed text-ink">
                         Check <span className="font-medium">{email.trim()}</span> for a
                         confirmation link — click it, then come back and sign in.
                       </p>
                       <button
                         onClick={() => switchMode("signIn")}
-                        className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"
+                        className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"
                       >
                         Go to sign in
                       </button>
                     </div>
                   ) : mode === "forgotPassword" ? (
                     resetSent ? (
-                      <div className="mt-4">
-                        <p className="text-sm leading-relaxed text-ink">
+                      <div className="mt-3">
+                        <p className="text-xs leading-relaxed text-ink">
                           Check <span className="font-medium">{email.trim()}</span> for a link to
                           reset your password.
                         </p>
                         <button
                           onClick={() => switchMode("signIn")}
-                          className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"
+                          className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"
                         >
                           Go to sign in
                         </button>
                       </div>
                     ) : (
-                      <form onSubmit={handleForgotPassword} className="mt-4 space-y-3">
-                        <p className="text-sm leading-relaxed text-ink-soft">
+                      <form onSubmit={handleForgotPassword} className="mt-3 space-y-2.5">
+                        <p className="text-xs leading-relaxed text-ink-soft">
                           Enter your email and we&rsquo;ll send you a link to reset your
                           password.
                         </p>
@@ -326,7 +326,7 @@ export default function MembershipPage() {
                       </form>
                     )
                   ) : mode === "signIn" ? (
-                    <form onSubmit={handleSignIn} className="mt-4 space-y-3">
+                    <form onSubmit={handleSignIn} className="mt-3 space-y-2.5">
                       <Field label="Email" htmlFor="email">
                         <input
                           id="email"
@@ -363,8 +363,8 @@ export default function MembershipPage() {
                       </SubmitButton>
                     </form>
                   ) : (
-                    <form onSubmit={handleSignUp} className="mt-4 space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
+                    <form onSubmit={handleSignUp} className="mt-3 space-y-2.5">
+                      <div className="grid grid-cols-2 gap-2.5">
                         <Field label="First name" htmlFor="first-name">
                           <input
                             id="first-name"
@@ -419,7 +419,7 @@ export default function MembershipPage() {
             </div>
           </div>
 
-          <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-soft/70">
+          <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-soft/70">
             {isSignedIn
               ? "You'll be redirected to Stripe to complete payment securely."
               : "Your account, secured with an email and password."}
@@ -432,7 +432,7 @@ export default function MembershipPage() {
 }
 
 const inputClass =
-  "mt-1.5 w-full rounded-sm border border-ink-line bg-cream px-3 py-2.5 text-sm text-ink outline-none focus:border-ink";
+  "mt-1 w-full rounded-sm border border-ink-line bg-cream px-3 py-2 text-sm text-ink outline-none focus:border-ink";
 
 function Field({
   label,
@@ -473,7 +473,7 @@ function SubmitButton({
     <button
       type="submit"
       disabled={submitting}
-      className="w-full rounded-full bg-ink py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
+      className="w-full rounded-full bg-ink py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
     >
       {children}
     </button>

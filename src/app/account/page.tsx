@@ -69,7 +69,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div>
       <div className="rounded-sm border border-ink-line bg-paper px-6 py-3.5">
         <div className="flex items-center justify-between">
           <p className="font-display text-lg text-ink">Hi, {displayFirstName}</p>

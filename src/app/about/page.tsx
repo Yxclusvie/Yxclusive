@@ -21,7 +21,7 @@ const COMPARE = [
 export default function AboutPage() {
   return (
     <div className="bg-citrus">
-      <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-24 sm:px-10 sm:pb-24 lg:px-24 lg:pt-8">
+      <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-16 sm:px-10 sm:pb-24 lg:px-24 lg:pt-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center lg:gap-16">
           <div className="relative z-0 aspect-[4/3] overflow-hidden rounded-sm border-4 border-cream shadow-2xl lg:-mr-24 lg:rotate-2">
             <Image
@@ -35,7 +35,7 @@ export default function AboutPage() {
 
           <div className="relative z-20">
             <h1 className="font-display text-4xl font-bold leading-[1.1] text-ink sm:text-5xl">
-              <span className="-ml-6 -mt-10 inline-block text-[7rem] leading-[0.8] text-cream sm:-ml-10 sm:-mt-16 sm:text-[10rem]">
+              <span className="-ml-2 -mt-20 inline-block text-[7rem] leading-[0.8] text-cream sm:-ml-6 sm:-mt-32 sm:text-[10rem]">
                 O
               </span>
               ur mission
@@ -196,7 +196,7 @@ export default function AboutPage() {
           <h2 className="mt-3 font-display text-2xl font-bold text-ink">
             Verifying authenticity on-chain.
           </h2>
-          <p className="mt-4 max-w-2xl font-display text-justify text-base leading-snug text-ink-soft">
+          <p className="mt-4 font-display text-justify text-base leading-snug text-ink-soft">
             Yxclusive started as a research project on blockchain-based authentication for
             secondhand luxury goods — a way to give every piece a verifiable, tamper-proof
             ownership history instead of just a seller&rsquo;s word. That&rsquo;s still where
@@ -206,7 +206,7 @@ export default function AboutPage() {
           </p>
 
           <h2 className="mt-8 font-display text-2xl font-bold text-ink">The bigger goal</h2>
-          <p className="mt-4 max-w-2xl font-display text-justify text-base leading-snug text-ink-soft">
+          <p className="mt-4 font-display text-justify text-base leading-snug text-ink-soft">
             We&rsquo;re building a community where you retain most of your profit and become
             part of something greater — a group of people who love fashion and fine things
             enough to keep them moving, piece by piece, instead of letting them gather dust.
