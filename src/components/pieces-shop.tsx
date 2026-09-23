@@ -423,12 +423,24 @@ function CarouselSlide({ item }: { item: Item }) {
         )}
 
         <div className="pointer-events-none absolute inset-y-0 left-0 flex w-10 items-center justify-center">
-          <svg viewBox="0 0 24 24" className="h-6 w-6 text-cream/70" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            viewBox="0 0 24 24"
+            className="h-6 w-6 animate-swipe-hint-left text-cream drop-shadow-[0_1px_4px_rgba(0,0,0,0.55)]"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 5l-7 7 7 7" />
           </svg>
         </div>
         <div className="pointer-events-none absolute inset-y-0 right-0 flex w-10 items-center justify-center">
-          <svg viewBox="0 0 24 24" className="h-6 w-6 text-cream/70" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            viewBox="0 0 24 24"
+            className="h-6 w-6 animate-swipe-hint-right text-cream drop-shadow-[0_1px_4px_rgba(0,0,0,0.55)]"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </div>
