@@ -30,6 +30,7 @@ export type ProductFormValues = {
   images: ProductImage[];
   sold: boolean;
   hidden: boolean;
+  membersOnly: boolean;
 };
 
 const EMPTY: ProductFormValues = {
@@ -46,6 +47,7 @@ const EMPTY: ProductFormValues = {
   images: [],
   sold: false,
   hidden: false,
+  membersOnly: false,
 };
 
 function readImageAspect(file: File): Promise<number> {
@@ -64,7 +66,13 @@ function readImageAspect(file: File): Promise<number> {
   });
 }
 
-export function ProductForm({ initial }: { initial?: ProductFormValues }) {
+export function ProductForm({
+  initial,
+  submissionId,
+}: {
+  initial?: ProductFormValues;
+  submissionId?: string;
+}) {
   const router = useRouter();
   const supabase = createClient();
   const isEditing = Boolean(initial?.id);
@@ -127,7 +135,7 @@ export function ProductForm({ initial }: { initial?: ProductFormValues }) {
       {
         method: isEditing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(submissionId ? { ...values, submissionId } : values),
       },
     );
 
@@ -293,6 +301,15 @@ export function ProductForm({ initial }: { initial?: ProductFormValues }) {
             className="h-3.5 w-3.5 accent-ink"
           />
           Hidden
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={values.membersOnly}
+            onChange={(event) => set("membersOnly", event.target.checked)}
+            className="h-3.5 w-3.5 accent-ink"
+          />
+          Yxmember only
         </label>
       </div>
 

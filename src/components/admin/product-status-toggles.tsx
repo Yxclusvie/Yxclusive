@@ -7,15 +7,17 @@ export function ProductStatusToggles({
   id,
   sold,
   hidden,
+  membersOnly,
 }: {
   id: string;
   sold: boolean;
   hidden: boolean;
+  membersOnly: boolean;
 }) {
   const router = useRouter();
-  const [busy, setBusy] = useState<"sold" | "hidden" | null>(null);
+  const [busy, setBusy] = useState<"sold" | "hidden" | "membersOnly" | null>(null);
 
-  const toggle = async (field: "sold" | "hidden", nextValue: boolean) => {
+  const toggle = async (field: "sold" | "hidden" | "membersOnly", nextValue: boolean) => {
     setBusy(field);
     const response = await fetch(`/api/admin/products/${id}`, {
       method: "PATCH",
@@ -52,6 +54,16 @@ export function ProductStatusToggles({
         }`}
       >
         {hidden ? "Unhide" : "Hide"}
+      </button>
+      <button
+        type="button"
+        onClick={() => void toggle("membersOnly", !membersOnly)}
+        disabled={busy === "membersOnly"}
+        className={`underline underline-offset-4 transition disabled:opacity-50 ${
+          membersOnly ? "text-ink" : "text-ink-soft hover:text-ink"
+        }`}
+      >
+        {membersOnly ? "Open to All" : "Members Only"}
       </button>
     </div>
   );

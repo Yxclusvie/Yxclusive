@@ -7,10 +7,11 @@ import { useCart } from "@/lib/cart";
 import { useMembership } from "@/lib/membership";
 
 export default function CartPage() {
-  const { isMember, isLoaded } = useMembership();
+  const { isMember, isLoaded, member } = useMembership();
   const cart = useCart();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasMembersOnly = !isMember && cart.items.some((entry) => entry.membersOnly);
 
   const handleCheckout = async () => {
     setError(null);
@@ -114,7 +115,14 @@ export default function CartPage() {
 
                 {!isLoaded ? (
                   <div className="mt-4 h-11 animate-pulse rounded-full bg-paper-dim" />
-                ) : isMember ? (
+                ) : hasMembersOnly ? (
+                  <Link
+                    href="/membership"
+                    className="mt-4 block w-full rounded-full bg-ink py-3 text-center font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft"
+                  >
+                    Become a Member to Checkout
+                  </Link>
+                ) : member ? (
                   <button
                     onClick={() => void handleCheckout()}
                     disabled={submitting}
@@ -127,8 +135,15 @@ export default function CartPage() {
                     href="/membership"
                     className="mt-4 block w-full rounded-full bg-ink py-3 text-center font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft"
                   >
-                    Become a Member to Checkout
+                    Sign In to Checkout
                   </Link>
+                )}
+
+                {hasMembersOnly && (
+                  <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.08em] text-red-700">
+                    Some pieces in your cart are reserved for Yxmembers. Remove them or join to
+                    check out.
+                  </p>
                 )}
 
                 {error && (

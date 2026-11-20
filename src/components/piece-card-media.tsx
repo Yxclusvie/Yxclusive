@@ -109,7 +109,7 @@ export function PieceCardMedia({
           >
             Retail ${estRetail.toLocaleString()}
             {compact ? <br /> : <>&nbsp;&nbsp;</>}
-            YXmember ${price.toLocaleString()}
+            YXPrice ${price.toLocaleString()}
           </p>
         </div>
       </div>

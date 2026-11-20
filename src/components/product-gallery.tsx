@@ -42,6 +42,7 @@ export function ProductGallery({
           otherImages={otherImages}
           onThumbnailClick={setActiveIndex}
           priority
+          showWatermark={false}
         />
       )}
     </div>

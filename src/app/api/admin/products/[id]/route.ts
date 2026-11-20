@@ -33,6 +33,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   }
   if (typeof body.sold === "boolean") fields.sold = body.sold;
   if (typeof body.hidden === "boolean") fields.hidden = body.hidden;
+  if (typeof body.membersOnly === "boolean") fields.members_only = body.membersOnly;
 
   const { error } = await supabase.from("products").update(fields).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

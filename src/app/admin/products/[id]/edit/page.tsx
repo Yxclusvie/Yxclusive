@@ -39,6 +39,7 @@ export default async function EditProductPage({
             images: item.images,
             sold: item.sold,
             hidden: item.hidden,
+            membersOnly: item.membersOnly,
           }}
         />
       </div>

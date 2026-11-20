@@ -71,15 +71,14 @@ export default async function OrderSuccessPage({
       // render a false success state.
       throw new Error(`Failed to record order: ${orderError.message}`);
     }
+  }
 
-    const { error: soldError } = await supabase
-      .from("products")
-      .update({ sold: true })
-      .in("id", toRecord);
+  const { error: soldError } = await supabase.rpc("mark_products_sold", {
+    product_ids: productIds,
+  });
 
-    if (soldError) {
-      throw new Error(`Failed to mark product sold: ${soldError.message}`);
-    }
+  if (soldError) {
+    throw new Error(`Failed to mark product sold: ${soldError.message}`);
   }
 
   const { data: products } = await supabase

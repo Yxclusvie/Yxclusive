@@ -15,16 +15,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_member")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.is_member) {
-    return NextResponse.json({ error: "Membership required to purchase." }, { status: 403 });
-  }
-
   const body = await request.json().catch(() => null);
   const rawIds: unknown = body?.productIds;
   if (!Array.isArray(rawIds) || rawIds.some((id) => typeof id !== "string")) {
@@ -59,6 +49,22 @@ export async function POST(request: NextRequest) {
   }
 
   const items = found.flatMap((item) => (item ? [item] : []));
+
+  if (items.some((item) => item.membersOnly)) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_member")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.is_member) {
+      return NextResponse.json(
+        { error: "Some pieces in your cart are reserved for Yxmembers." },
+        { status: 403 },
+      );
+    }
+  }
+
   const origin = request.nextUrl.origin;
 
   const session = await stripe.checkout.sessions.create({

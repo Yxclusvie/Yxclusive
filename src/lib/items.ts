@@ -31,6 +31,7 @@ export type Item = {
   provenance: string;
   sold: boolean;
   hidden: boolean;
+  membersOnly: boolean;
 };
 
 type ProductRow = {
@@ -50,6 +51,7 @@ type ProductRow = {
   provenance: string | null;
   sold: boolean;
   hidden: boolean;
+  members_only: boolean | null;
   product_images: { url: string; aspect: number; position: number }[];
 };
 
@@ -74,6 +76,7 @@ function toItem(row: ProductRow): Item {
     provenance: row.provenance ?? "",
     sold: row.sold,
     hidden: row.hidden,
+    membersOnly: row.members_only ?? false,
   };
 }
 

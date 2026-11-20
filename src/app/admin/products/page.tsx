@@ -42,12 +42,22 @@ export default async function AdminProductsPage() {
                     Hidden
                   </span>
                 )}
+                {item.membersOnly && (
+                  <span className="shrink-0 rounded-full border border-citrus-deep px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-citrus-deep">
+                    Members only
+                  </span>
+                )}
               </div>
               <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-ink-soft">
                 {item.maker} · {item.category} · ${item.price.toLocaleString()}
               </p>
             </div>
-            <ProductStatusToggles id={item.id} sold={item.sold} hidden={item.hidden} />
+            <ProductStatusToggles
+              id={item.id}
+              sold={item.sold}
+              hidden={item.hidden}
+              membersOnly={item.membersOnly}
+            />
             <Link
               href={`/admin/products/${item.id}/edit`}
               className="shrink-0 font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"

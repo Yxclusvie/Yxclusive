@@ -338,13 +338,11 @@ export default function MembershipPage() {
                         />
                       </Field>
                       <Field label="Password" htmlFor="password">
-                        <input
+                        <PasswordInput
                           id="password"
-                          type="password"
                           value={password}
-                          onChange={(event) => setPassword(event.target.value)}
+                          onChange={setPassword}
                           placeholder="••••••••"
-                          className={inputClass}
                         />
                       </Field>
 
@@ -397,13 +395,11 @@ export default function MembershipPage() {
                         />
                       </Field>
                       <Field label="Password" htmlFor="new-password">
-                        <input
+                        <PasswordInput
                           id="new-password"
-                          type="password"
                           value={password}
-                          onChange={(event) => setPassword(event.target.value)}
+                          onChange={setPassword}
                           placeholder="At least 8 characters"
-                          className={inputClass}
                         />
                       </Field>
 
@@ -452,6 +448,42 @@ function Field({
         {label}
       </label>
       {children}
+    </div>
+  );
+}
+
+function PasswordInput({
+  id,
+  value,
+  onChange,
+  placeholder,
+}: {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="relative">
+      <input
+        id={id}
+        type={visible ? "text" : "password"}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className={`${inputClass} pr-16`}
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((prev) => !prev)}
+        aria-label={visible ? "Hide password" : "Show password"}
+        aria-pressed={visible}
+        className="absolute right-3 top-1 flex h-[38px] items-center font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft transition hover:text-ink"
+      >
+        {visible ? "Hide" : "Show"}
+      </button>
     </div>
   );
 }

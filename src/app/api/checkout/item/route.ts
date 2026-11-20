@@ -13,16 +13,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_member")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.is_member) {
-    return NextResponse.json({ error: "Membership required to purchase." }, { status: 403 });
-  }
-
   const body = await request.json().catch(() => null);
   const productId = typeof body?.productId === "string" ? body.productId : null;
   if (!productId) {
@@ -35,6 +25,21 @@ export async function POST(request: NextRequest) {
   }
   if (item.sold) {
     return NextResponse.json({ error: "This piece has already sold." }, { status: 400 });
+  }
+
+  if (item.membersOnly) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_member")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.is_member) {
+      return NextResponse.json(
+        { error: "This piece is reserved for Yxmembers." },
+        { status: 403 },
+      );
+    }
   }
 
   const origin = request.nextUrl.origin;

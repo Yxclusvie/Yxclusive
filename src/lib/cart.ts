@@ -12,6 +12,7 @@ export type CartItem = {
   maker: string;
   price: number;
   image: string | null;
+  membersOnly?: boolean;
 };
 
 const STORAGE_KEY = "yx-cart";
@@ -72,6 +73,7 @@ export function toCartItem(item: Item): CartItem {
     maker: item.maker,
     price: item.price,
     image: item.images[0]?.url ?? null,
+    membersOnly: item.membersOnly,
   };
 }
 

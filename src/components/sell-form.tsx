@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import type { Category } from "@/lib/items";
 
 const CATEGORIES: (Category | "Other")[] = [
@@ -13,18 +14,109 @@ const CATEGORIES: (Category | "Other")[] = [
   "Other",
 ];
 
+const MAX_PHOTOS = 8;
+const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+
+function readImageAspect(file: File): Promise<number> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      resolve(img.naturalWidth / img.naturalHeight || 1);
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => {
+      resolve(1);
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  });
+}
+
 export function SellForm({ makers }: { makers: string[] }) {
   const [designer, setDesigner] = useState("");
   const [category, setCategory] = useState("");
   const [itemName, setItemName] = useState("");
   const [details, setDetails] = useState("");
-  const [fileNames, setFileNames] = useState<string[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const previews = useMemo(() => files.map((file) => URL.createObjectURL(file)), [files]);
+  useEffect(() => () => previews.forEach((url) => URL.revokeObjectURL(url)), [previews]);
+
+  const addFiles = (list: FileList | null) => {
+    const incoming = Array.from(list ?? []);
+    if (incoming.length === 0) return;
+
+    const accepted = incoming.filter(
+      (file) => file.type.startsWith("image/") && file.size <= MAX_PHOTO_BYTES,
+    );
+    const skipped = incoming.length - accepted.length;
+    const next = [...files, ...accepted].slice(0, MAX_PHOTOS);
+
+    setFiles(next);
+    if (skipped > 0) {
+      setError("Some files were skipped. Photos must be images under 10 MB.");
+    } else if (files.length + accepted.length > MAX_PHOTOS) {
+      setError(`You can add up to ${MAX_PHOTOS} photos.`);
+    } else {
+      setError(null);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setSubmitted(true);
+
+    if (files.length === 0) {
+      setError("Add at least one photo of your piece.");
+      return;
+    }
+
+    setError(null);
+    setSubmitting(true);
+
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Please sign in again.");
+
+      const images: { url: string; aspect: number }[] = [];
+      for (const file of files) {
+        const aspect = await readImageAspect(file);
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = `${user.id}/${crypto.randomUUID()}-${safeName}`;
+        const { error: uploadError } = await supabase.storage
+          .from("submission-images")
+          .upload(path, file);
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage.from("submission-images").getPublicUrl(path);
+        images.push({ url: data.publicUrl, aspect });
+      }
+
+      const response = await fetch("/api/submissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ designer, category, itemName, details, images }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? "Could not send your submission.");
+      }
+
+      setSubmitted(true);
+    } catch {
+      setError("Something went wrong sending your submission. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -38,7 +130,8 @@ export function SellForm({ makers }: { makers: string[] }) {
             <div className="py-10 text-center">
               <p className="font-display text-2xl text-ink">Submission received.</p>
               <p className="mt-2 text-sm text-ink-soft">
-                We&rsquo;ll review your piece and follow up by email with an offer.
+                We&rsquo;ll review your piece and follow up by email. You can track it under
+                Selling Activity.
               </p>
               <button
                 onClick={() => {
@@ -47,7 +140,8 @@ export function SellForm({ makers }: { makers: string[] }) {
                   setCategory("");
                   setItemName("");
                   setDetails("");
-                  setFileNames([]);
+                  setFiles([]);
+                  setError(null);
                 }}
                 className="mt-6 font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"
               >
@@ -126,9 +220,7 @@ export function SellForm({ makers }: { makers: string[] }) {
                   multiple
                   accept="image/*"
                   className="hidden"
-                  onChange={(event) =>
-                    setFileNames(Array.from(event.target.files ?? []).map((file) => file.name))
-                  }
+                  onChange={(event) => addFiles(event.target.files)}
                 />
                 <button
                   type="button"
@@ -138,8 +230,30 @@ export function SellForm({ makers }: { makers: string[] }) {
                   Add file
                 </button>
 
-                {fileNames.length > 0 && (
-                  <p className="mt-3 text-xs text-ink-soft">{fileNames.join(", ")}</p>
+                {files.length > 0 && (
+                  <ul className="mt-4 flex flex-wrap justify-center gap-2">
+                    {files.map((file, index) => (
+                      <li
+                        key={`${file.name}-${index}`}
+                        className="relative h-16 w-16 overflow-hidden rounded-sm border border-ink-line"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={previews[index]}
+                          alt={file.name}
+                          className="h-full w-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFiles((prev) => prev.filter((_, i) => i !== index))}
+                          aria-label={`Remove ${file.name}`}
+                          className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-ink/80 text-[10px] leading-none text-cream"
+                        >
+                          ×
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
 
@@ -159,15 +273,22 @@ export function SellForm({ makers }: { makers: string[] }) {
                 className="mt-3 w-full rounded-sm border border-ink-line bg-cream px-3 py-2.5 text-sm text-ink outline-none placeholder:text-ink-soft/60 focus:border-ink"
               />
 
+              {error && (
+                <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.08em] text-red-700">
+                  {error}
+                </p>
+              )}
+
               <button
                 type="submit"
-                className="mt-6 w-full rounded-full bg-ink py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft"
+                disabled={submitting}
+                className="mt-6 w-full rounded-full bg-ink py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Get My Offer
+                {submitting ? "Sending…" : "Get My Offer"}
               </button>
 
               <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-soft/70">
-                Offers are not yet connected — submitting here previews the flow only.
+                Our team reviews every submission and replies by email.
               </p>
             </form>
           )}

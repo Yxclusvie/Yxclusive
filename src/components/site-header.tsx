@@ -92,6 +92,17 @@ export function SiteHeader() {
                         </Link>
                       </li>
                     )}
+                    {isAdmin && (
+                      <li>
+                        <Link
+                          href="/admin/submissions"
+                          onClick={() => setAccountNavOpen(false)}
+                          className="inline-block py-0.5 opacity-75 transition hover:opacity-100"
+                        >
+                          Review Submissions →
+                        </Link>
+                      </li>
+                    )}
                   </ul>
                 )}
               </li>
@@ -195,6 +206,18 @@ export function SiteHeader() {
                           className="inline-block py-0.5 opacity-90 transition hover:opacity-100"
                         >
                           Manage Inventory →
+                        </Link>
+                      )}
+                      {isAdmin && (
+                        <Link
+                          href="/admin/submissions"
+                          onClick={() => {
+                            setMenuOpen(false);
+                            setAccountNavOpen(false);
+                          }}
+                          className="inline-block py-0.5 opacity-90 transition hover:opacity-100"
+                        >
+                          Review Submissions →
                         </Link>
                       )}
                     </div>

@@ -21,7 +21,7 @@ const COMPARE = [
 export default function AboutPage() {
   return (
     <div className="bg-citrus">
-      <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-16 sm:px-10 sm:pb-24 lg:px-24 lg:pt-8">
+      <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-16 sm:px-10 sm:pb-24 sm:pt-24 lg:px-24 lg:pt-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center lg:gap-16">
           <div className="relative z-0 aspect-[4/3] overflow-hidden rounded-sm border-4 border-cream shadow-2xl lg:-mr-24 lg:rotate-2">
             <Image
@@ -31,6 +31,11 @@ export default function AboutPage() {
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
             />
+            <p className="absolute bottom-2 right-2 rounded-sm bg-ink/60 px-2 py-1 text-right font-mono text-[9px] uppercase leading-snug tracking-[0.12em] text-cream backdrop-blur-sm sm:text-[10px]">
+              <span className="italic">Happy Victims</span>
+              <br />
+              Kyoichi Tsuzuki
+            </p>
           </div>
 
           <div className="relative z-20">
@@ -100,6 +105,11 @@ export default function AboutPage() {
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
             />
+            <p className="absolute bottom-2 right-2 rounded-sm bg-ink/60 px-2 py-1 text-right font-mono text-[9px] uppercase leading-snug tracking-[0.12em] text-cream backdrop-blur-sm sm:text-[10px]">
+              <span className="italic">Happy Victims</span>
+              <br />
+              Kyoichi Tsuzuki
+            </p>
           </div>
         </div>
 
@@ -186,6 +196,11 @@ export default function AboutPage() {
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
             />
+            <p className="absolute bottom-2 right-2 rounded-sm bg-ink/60 px-2 py-1 text-right font-mono text-[9px] uppercase leading-snug tracking-[0.12em] text-cream backdrop-blur-sm sm:text-[10px]">
+              <span className="italic">Happy Victims</span>
+              <br />
+              Kyoichi Tsuzuki
+            </p>
           </div>
         </div>
 

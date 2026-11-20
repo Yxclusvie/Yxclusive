@@ -140,7 +140,7 @@ export async function GET(
               color: "#fbf7ef",
             }}
           >
-            Retail ${item.estRetail.toLocaleString()}&nbsp;&nbsp;YXmember $
+            Retail ${item.estRetail.toLocaleString()}&nbsp;&nbsp;YXPrice $
             {item.price.toLocaleString()}
           </div>
         </div>

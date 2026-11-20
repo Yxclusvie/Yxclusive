@@ -338,6 +338,7 @@ function ProductCard({ item }: { item: Item }) {
             estRetail={item.estRetail}
             otherImages={otherImages}
             compact
+            showWatermark={false}
           />
         )}
 
@@ -517,7 +518,7 @@ function CarouselSlide({ item }: { item: Item }) {
             </button>
           </div>
 
-          {isMember && !item.sold && (
+          {!item.sold && (!item.membersOnly || isMember) && (
             <button
               type="button"
               onClick={(event) => {

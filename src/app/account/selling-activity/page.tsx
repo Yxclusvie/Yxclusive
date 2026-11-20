@@ -1,12 +1,48 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 const TABS = ["Active Submissions", "Past Submissions"] as const;
 
+type Entry = {
+  id: string;
+  item_name: string;
+  designer: string;
+  category: string;
+  status: "pending" | "approved" | "declined";
+  created_at: string;
+  images: { url: string }[] | null;
+};
+
+const STATUS_LABEL: Record<Entry["status"], string> = {
+  pending: "Under review",
+  approved: "Accepted",
+  declined: "Not accepted",
+};
+
 export default function SellingActivityPage() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("Active Submissions");
+  const [entries, setEntries] = useState<Entry[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    createClient()
+      .from("submissions")
+      .select("id, item_name, designer, category, status, created_at, images")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (!cancelled) setEntries((data ?? []) as Entry[]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const visible = (entries ?? []).filter((entry) =>
+    tab === "Active Submissions" ? entry.status === "pending" : entry.status !== "pending",
+  );
 
   return (
     <div>
@@ -48,16 +84,49 @@ export default function SellingActivityPage() {
           ))}
         </div>
 
-        <div className="px-6 py-14 text-center">
-          <p className="text-sm text-ink">No {tab}</p>
-          <Link
-            href="/account/sell"
-            className="mt-2 inline-block font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"
-          >
-            Sell Now
-          </Link>{" "}
-          <span className="text-sm text-ink-soft">to get an offer.</span>
-        </div>
+        {entries === null ? (
+          <div className="px-6 py-14 text-center text-sm text-ink-soft">Loading…</div>
+        ) : visible.length === 0 ? (
+          <div className="px-6 py-14 text-center">
+            <p className="text-sm text-ink">No {tab}</p>
+            <Link
+              href="/account/sell"
+              className="mt-2 inline-block font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep underline underline-offset-4"
+            >
+              Sell Now
+            </Link>{" "}
+            <span className="text-sm text-ink-soft">to get an offer.</span>
+          </div>
+        ) : (
+          <ul className="divide-y divide-ink-line">
+            {visible.map((entry) => (
+              <li key={entry.id} className="flex items-center gap-4 px-4 py-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={entry.images?.[0]?.url}
+                  alt=""
+                  className="h-14 w-14 shrink-0 rounded-sm border border-ink-line object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm text-ink">{entry.item_name}</p>
+                  <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-ink-soft">
+                    {entry.designer} · {entry.category} ·{" "}
+                    {new Date(entry.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <span
+                  className={`shrink-0 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] ${
+                    entry.status === "pending"
+                      ? "bg-ink text-cream"
+                      : "border border-ink-line text-ink-soft"
+                  }`}
+                >
+                  {STATUS_LABEL[entry.status]}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

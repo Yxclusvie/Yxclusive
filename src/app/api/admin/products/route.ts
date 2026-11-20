@@ -58,12 +58,24 @@ export async function POST(request: NextRequest) {
       provenance: body.provenance || null,
       sold: Boolean(body.sold),
       hidden: Boolean(body.hidden),
+      members_only: Boolean(body.membersOnly),
     })
     .select("id")
     .single();
 
   if (error || !product) {
     return NextResponse.json({ error: error?.message ?? "Could not create product." }, { status: 500 });
+  }
+
+  if (typeof body.submissionId === "string" && body.submissionId) {
+    await supabase
+      .from("submissions")
+      .update({
+        status: "approved",
+        product_id: product.id,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", body.submissionId);
   }
 
   const { error: imagesError } = await supabase.from("product_images").insert(
