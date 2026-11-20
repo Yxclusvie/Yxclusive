@@ -27,13 +27,22 @@ export function PieceCardMedia({
   compact?: boolean;
   showWatermark?: boolean;
 }) {
+  const thumbCount = otherImages.length;
+  const thumbPad = compact
+    ? `calc(${thumbCount} * 1.75rem + ${thumbCount - 1} * 0.375rem + 1.25rem)`
+    : `calc(${thumbCount} * 3.5rem + ${thumbCount - 1} * 0.5rem + 2.25rem)`;
+
   return (
     <>
       <Image
         src={imageUrl}
         alt={alt}
         fill
-        sizes={compact ? "(max-width: 1024px) 50vw, 25vw" : "(max-width: 1024px) 100vw, 55vw"}
+        sizes={
+          compact
+            ? "(max-width: 1024px) 50vw, 25vw"
+            : "(max-width: 1024px) 100vw, 55vw"
+        }
         priority={priority}
         className="object-cover"
       />
@@ -52,40 +61,65 @@ export function PieceCardMedia({
 
       <div
         className={`pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/90 via-ink/45 to-transparent ${
-          compact ? "px-3 pb-3 pt-10" : "px-4 pb-4 pt-16 sm:px-6 sm:pb-6 sm:pt-24"
+          compact
+            ? "px-3 pb-3 pt-10"
+            : "px-4 pb-4 pt-16 sm:px-6 sm:pb-6 sm:pt-24"
         }`}
       >
-        <p
-          className={`font-sans leading-snug text-cream ${
-            compact ? "text-xs font-light" : "text-lg font-semibold sm:text-xl"
-          }`}
+        <div
+          style={
+            thumbCount > 0
+              ? ({ "--thumb-pad": thumbPad } as React.CSSProperties)
+              : undefined
+          }
+          className={
+            thumbCount > 0
+              ? compact
+                ? "lg:pr-[var(--thumb-pad)]"
+                : "pr-[var(--thumb-pad)]"
+              : undefined
+          }
         >
-          {name}
-        </p>
-        {size && (
           <p
-            className={`text-cream ${
-              compact ? "mt-1 hidden text-xs lg:block" : "mt-3 text-sm sm:text-base"
+            className={`font-sans leading-snug text-cream ${
+              compact
+                ? "text-xs font-light"
+                : "text-lg font-semibold sm:text-xl"
             }`}
           >
-            Size {size}
+            {name}
           </p>
-        )}
-        <p
-          className={`text-cream ${
-            compact ? "mt-1 hidden text-xs leading-snug lg:block" : "mt-3 text-sm sm:text-base"
-          }`}
-        >
-          Retail ${estRetail.toLocaleString()}
-          {compact ? <br /> : <>&nbsp;&nbsp;</>}
-          YXmember ${price.toLocaleString()}
-        </p>
+          {size && (
+            <p
+              className={`text-cream ${
+                compact
+                  ? "mt-1 hidden text-xs lg:block"
+                  : "mt-3 text-sm sm:text-base"
+              }`}
+            >
+              Size {size}
+            </p>
+          )}
+          <p
+            className={`text-cream ${
+              compact
+                ? "mt-1 hidden text-xs leading-snug lg:block"
+                : "mt-3 text-sm sm:text-base"
+            }`}
+          >
+            Retail ${estRetail.toLocaleString()}
+            {compact ? <br /> : <>&nbsp;&nbsp;</>}
+            YXmember ${price.toLocaleString()}
+          </p>
+        </div>
       </div>
 
       {otherImages.length > 0 && (
         <div
           className={`absolute flex ${
-            compact ? "bottom-3 right-3 hidden gap-1.5 lg:flex" : "bottom-4 right-4 gap-2 sm:bottom-6 sm:right-6"
+            compact
+              ? "bottom-3 right-3 hidden gap-1.5 lg:flex"
+              : "bottom-4 right-4 gap-2 sm:bottom-6 sm:right-6"
           }`}
         >
           {otherImages.map(({ url, index }) =>
@@ -102,7 +136,13 @@ export function PieceCardMedia({
                 }`}
                 aria-label="View this photo"
               >
-                <Image src={url} alt="" fill sizes="56px" className="object-cover" />
+                <Image
+                  src={url}
+                  alt=""
+                  fill
+                  sizes="56px"
+                  className="object-cover"
+                />
               </button>
             ) : (
               <div
@@ -111,7 +151,13 @@ export function PieceCardMedia({
                   compact ? "h-7 w-7" : "h-12 w-12 sm:h-14 sm:w-14"
                 }`}
               >
-                <Image src={url} alt="" fill sizes="56px" className="object-cover" />
+                <Image
+                  src={url}
+                  alt=""
+                  fill
+                  sizes="56px"
+                  className="object-cover"
+                />
               </div>
             ),
           )}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useMembership } from "@/lib/membership";
+import { useCart } from "@/lib/cart";
 import { BrandMark } from "@/components/brand-mark";
 
 const ACCOUNT_SUBNAV = [
@@ -16,6 +17,7 @@ const ACCOUNT_SUBNAV = [
 
 export function SiteHeader() {
   const { isMember, isAdmin, isLoaded } = useMembership();
+  const { count: cartCount } = useCart();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountNavOpen, setAccountNavOpen] = useState(false);
@@ -124,20 +126,25 @@ export function SiteHeader() {
       </button>
 
       <Link
-        href="/"
-        aria-label="Yxclusive home"
+        href={cartCount > 0 ? "/cart" : "/"}
+        aria-label={cartCount > 0 ? `Cart, ${cartCount} ${cartCount === 1 ? "item" : "items"}` : "Yxclusive home"}
         className="fixed right-4 top-4 z-40 block"
         onClick={() => setMenuOpen(false)}
       >
         <BrandMark
-          signedIn={isLoaded && isMember}
+          signedIn={(isLoaded && isMember) || cartCount > 0}
           className="h-11 w-11 drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)] sm:h-14 sm:w-14"
         />
+        {cartCount > 0 && (
+          <span className="absolute -bottom-1 -left-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-cream bg-ink px-1 font-mono text-[10px] leading-none text-cream">
+            {cartCount}
+          </span>
+        )}
       </Link>
 
       {menuOpen && (
         <nav className="fixed inset-0 z-30 flex flex-col items-center justify-center bg-ink/50 backdrop-blur-lg lg:hidden">
-          <div className="flex flex-col items-center gap-1 font-mono text-[11px] uppercase tracking-[0.14em] text-cream [text-shadow:0_1px_4px_rgba(0,0,0,0.55)]">
+          <div className="flex flex-col items-center gap-5 font-mono text-[11px] uppercase tracking-[0.14em] text-cream [text-shadow:0_1px_4px_rgba(0,0,0,0.55)]">
             {navLinks.map((link) => {
               const active = pathname === link.href;
               const isYxmember = link.label === "Yxmember";

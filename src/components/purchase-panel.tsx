@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useMembership } from "@/lib/membership";
+import { MAX_CART_ITEMS, toCartItem, useCart } from "@/lib/cart";
 import type { Item } from "@/lib/items";
 
 export function PurchasePanel({ item }: { item: Item }) {
   const { isMember, isLoaded } = useMembership();
+  const cart = useCart();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,6 +72,26 @@ export function PurchasePanel({ item }: { item: Item }) {
         >
           {submitting ? "Redirecting to Checkout…" : "Buy Now"}
         </button>
+        {cart.has(item.id) ? (
+          <Link
+            href="/cart"
+            className="mt-2 block w-full rounded-full border border-ink py-3 text-center font-mono text-[11px] uppercase tracking-[0.16em] text-ink transition hover:bg-ink hover:text-cream"
+          >
+            In Cart — View Cart
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              if (!cart.add(toCartItem(item))) {
+                setError(`Your cart is full (${MAX_CART_ITEMS} pieces max).`);
+              }
+            }}
+            className="mt-2 w-full rounded-full border border-ink py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-ink transition hover:bg-ink hover:text-cream"
+          >
+            Add to Cart
+          </button>
+        )}
         {error && (
           <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.08em] text-red-700">
             {error}

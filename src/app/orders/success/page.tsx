@@ -24,33 +24,47 @@ export default async function OrderSuccessPage({
 
   if (!user) redirect("/pieces");
 
-  const productId = session.metadata?.productId;
-  if (!productId) redirect("/pieces");
+  const metadata = session.metadata ?? {};
+  const productIds = (metadata.productIds ?? metadata.productId ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+  if (productIds.length === 0) redirect("/pieces");
 
-  const { data: existingOrder } = await supabase
+  const { data: existingOrders } = await supabase
     .from("orders")
-    .select("id")
-    .eq("stripe_checkout_session_id", session.id)
-    .maybeSingle();
+    .select("product_id")
+    .eq("stripe_checkout_session_id", session.id);
 
-  let productName = "your piece";
+  const recorded = new Set((existingOrders ?? []).map((row) => row.product_id));
+  const toRecord = productIds.filter((id) => !recorded.has(id));
 
-  if (!existingOrder) {
+  if (toRecord.length > 0) {
     const shipping = session.collected_information?.shipping_details;
     const paymentIntentId =
       typeof session.payment_intent === "string"
         ? session.payment_intent
         : session.payment_intent?.id;
 
-    const { error: orderError } = await supabase.from("orders").insert({
-      product_id: productId,
-      user_id: user.id,
-      price: Math.round((session.amount_total ?? 0) / 100),
-      shipping_name: shipping?.name ?? null,
-      shipping_address: shipping?.address ?? null,
-      stripe_checkout_session_id: session.id,
-      stripe_payment_intent_id: paymentIntentId ?? null,
-    });
+    const { data: priced } = await supabase
+      .from("products")
+      .select("id, price")
+      .in("id", toRecord);
+    const priceById = new Map((priced ?? []).map((row) => [row.id, row.price as number]));
+
+    const { error: orderError } = await supabase.from("orders").insert(
+      toRecord.map((productId) => ({
+        product_id: productId,
+        user_id: user.id,
+        price:
+          priceById.get(productId) ??
+          Math.round((session.amount_total ?? 0) / 100 / productIds.length),
+        shipping_name: shipping?.name ?? null,
+        shipping_address: shipping?.address ?? null,
+        stripe_checkout_session_id: session.id,
+        stripe_payment_intent_id: paymentIntentId ?? null,
+      })),
+    );
 
     if (orderError) {
       // Payment succeeded but we failed to record the order — this must not
@@ -61,20 +75,25 @@ export default async function OrderSuccessPage({
     const { error: soldError } = await supabase
       .from("products")
       .update({ sold: true })
-      .eq("id", productId);
+      .in("id", toRecord);
 
     if (soldError) {
       throw new Error(`Failed to mark product sold: ${soldError.message}`);
     }
   }
 
-  const { data: product } = await supabase
+  const { data: products } = await supabase
     .from("products")
     .select("name")
-    .eq("id", productId)
-    .maybeSingle();
+    .in("id", productIds);
 
-  if (product?.name) productName = product.name;
+  const names = (products ?? []).map((row) => row.name as string);
+  const label =
+    names.length === 0
+      ? "your piece"
+      : names.length === 1
+        ? names[0]
+        : `${names.length} pieces`;
 
-  return <SuccessClient name={productName} />;
+  return <SuccessClient name={label} />;
 }

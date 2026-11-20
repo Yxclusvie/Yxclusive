@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { Category, Item } from "@/lib/items";
 import { PieceCardMedia } from "@/components/piece-card-media";
+import { useMembership } from "@/lib/membership";
+import { toCartItem, useCart } from "@/lib/cart";
 
 const CATEGORIES: Category[] = [
   "Bags",
@@ -382,6 +384,9 @@ function ProductCard({ item }: { item: Item }) {
 }
 
 function CarouselSlide({ item }: { item: Item }) {
+  const { isMember } = useMembership();
+  const cart = useCart();
+  const inCart = cart.has(item.id);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(item.likes);
   const [copied, setCopied] = useState(false);
@@ -511,6 +516,35 @@ function CarouselSlide({ item }: { item: Item }) {
               )}
             </button>
           </div>
+
+          {isMember && !item.sold && (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.preventDefault();
+                if (inCart) cart.remove(item.id);
+                else cart.add(toCartItem(item));
+              }}
+              aria-pressed={inCart}
+              aria-label={inCart ? "Remove from cart" : "Add to cart"}
+              className={`flex h-[26.5px] w-[26.5px] items-center justify-center rounded-full border backdrop-blur transition ${
+                inCart
+                  ? "border-ink bg-ink text-cream"
+                  : "border-ink-line bg-cream/90 text-ink-soft hover:text-ink"
+              }`}
+            >
+              {inCart ? (
+                <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 8h12l-1 12H7L6 8Z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 8V6a3 3 0 0 1 6 0v2" />
+                </svg>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </Link>

@@ -16,7 +16,7 @@ export function BrandMark({
       <circle cx="38" cy="42" r="4" fill="var(--color-ink)" />
       <circle cx="62" cy="42" r="4" fill="var(--color-ink)" />
       <path
-        d="M34 60c5 8 27 8 32 0"
+        d={signedIn ? "M34 60c5 8 27 8 32 0" : "M36 64c6 2 22 2 28 0"}
         stroke="var(--color-ink)"
         strokeWidth="4"
         strokeLinecap="round"
