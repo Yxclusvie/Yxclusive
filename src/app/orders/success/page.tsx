@@ -11,9 +11,9 @@ export default async function OrderSuccessPage({
   const { session_id: sessionId } = await searchParams;
   if (!sessionId) redirect("/pieces");
 
-  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  const session = await stripe.checkout.sessions.retrieve(sessionId).catch(() => null);
 
-  if (session.payment_status !== "paid" && session.status !== "complete") {
+  if (!session || session.payment_status !== "paid") {
     redirect("/pieces");
   }
 
@@ -23,6 +23,9 @@ export default async function OrderSuccessPage({
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/pieces");
+
+  // Only the account that started this checkout may record its order.
+  if (session.metadata?.userId !== user.id) redirect("/pieces");
 
   const metadata = session.metadata ?? {};
   const productIds = (metadata.productIds ?? metadata.productId ?? "")

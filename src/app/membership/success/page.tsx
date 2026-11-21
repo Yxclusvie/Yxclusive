@@ -11,9 +11,9 @@ export default async function MembershipSuccessPage({
   const { session_id: sessionId } = await searchParams;
   if (!sessionId) redirect("/membership");
 
-  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  const session = await stripe.checkout.sessions.retrieve(sessionId).catch(() => null);
 
-  if (session.payment_status !== "paid" && session.status !== "complete") {
+  if (!session || session.payment_status !== "paid") {
     redirect("/membership");
   }
 
@@ -23,6 +23,9 @@ export default async function MembershipSuccessPage({
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/membership");
+
+  // Only the account that started this checkout may claim its membership.
+  if (session.metadata?.userId !== user.id) redirect("/membership");
 
   const stripeCustomerId =
     typeof session.customer === "string" ? session.customer : session.customer?.id;
