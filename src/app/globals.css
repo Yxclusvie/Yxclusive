@@ -161,8 +161,41 @@ body {
   animation: hint-life 6s ease-out both;
 }
 
+@keyframes hint-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.85);
+  }
+  60% {
+    transform: translateY(-2px) scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes hint-bob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-3px);
+  }
+}
+
+.hint-pop {
+  animation: hint-pop 0.45s ease-out both;
+}
+
+.hint-bob {
+  animation: hint-bob 0.9s ease-in-out 0.9s infinite alternate;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-hint-life {
+  .animate-hint-life,
+  .hint-pop,
+  .hint-bob {
     animation: none !important;
   }
 }

@@ -306,29 +306,45 @@ function MobileHint({ onDone }: { onDone: () => void }) {
   const caret =
     "absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-ink/80";
 
+  const ring =
+    "absolute top-4 h-11 w-11 -translate-x-1/2 animate-ping rounded-full border-2 border-cream/80";
+
   return (
     <div
       aria-hidden="true"
       className="animate-hint-life pointer-events-none fixed inset-0 z-30 lg:hidden"
     >
+      <span className={`${ring} left-[41.1%]`} />
+      <span className={`${ring} left-[65.5%]`} style={{ animationDelay: "0.35s" }} />
+
       <div className="absolute left-[41.1%] top-[66px] -translate-x-1/2">
-        <p className={label}>
-          <span className={caret} />
-          Filter
-        </p>
+        <div className="hint-pop" style={{ animationDelay: "0.1s" }}>
+          <p className={`${label} hint-bob`}>
+            <span className={caret} />
+            Filter
+          </p>
+        </div>
       </div>
       <div className="absolute left-[65.5%] top-[66px] -translate-x-1/2">
-        <p className={`${label} whitespace-nowrap`}>
-          <span className={caret} />
-          Grid view
-        </p>
+        <div className="hint-pop" style={{ animationDelay: "0.5s" }}>
+          <p className={`${label} hint-bob whitespace-nowrap`}>
+            <span className={caret} />
+            Grid view
+          </p>
+        </div>
       </div>
       <div className="absolute inset-x-0 bottom-28 flex justify-center">
-        <p className={`${label} flex items-center gap-2 whitespace-nowrap py-2`}>
-          <span aria-hidden="true">←</span>
-          Swipe to browse
-          <span aria-hidden="true">→</span>
-        </p>
+        <div className="hint-pop" style={{ animationDelay: "0.9s" }}>
+          <p className={`${label} flex items-center gap-2 whitespace-nowrap py-2`}>
+            <span aria-hidden="true" className="animate-swipe-hint-left">
+              ←
+            </span>
+            Swipe to browse
+            <span aria-hidden="true" className="animate-swipe-hint-right">
+              →
+            </span>
+          </p>
+        </div>
       </div>
     </div>
   );
