@@ -1,8 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { useMembership } from "@/lib/membership";
+
+const GUEST_FEATURES = [
+  "Buy any piece in the collection.",
+  "Track your orders in your account.",
+  "Upgrade to Yxmember any time.",
+];
 
 const FEATURES = [
   "Keep 95% of every sale — the 5% commission covers transaction fees and others.",
@@ -23,6 +30,7 @@ export default function MembershipPage() {
   } = useMembership();
 
   const [mode, setMode] = useState<Mode>("signIn");
+  const [plan, setPlan] = useState<"guest" | "member" | null>(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -133,6 +141,11 @@ export default function MembershipPage() {
     setResetSent(false);
   };
 
+  const choosePlan = (nextPlan: "guest" | "member", nextMode: Mode) => {
+    setPlan(nextPlan);
+    switchMode(nextMode);
+  };
+
   const handleForgotPassword = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -157,93 +170,7 @@ export default function MembershipPage() {
     setSubmitting(false);
   };
 
-  return (
-    <div className="bg-citrus">
-    <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-24 sm:px-10 sm:pb-24 lg:pl-36 lg:pr-32 lg:pt-8">
-      <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-stretch lg:gap-16">
-        <div className="relative w-full overflow-hidden rounded-sm border border-ink-line bg-paper">
-          <div className="relative aspect-[4/5] w-full lg:h-full lg:aspect-auto">
-            <Image
-              src="/membership-hero-bags.jpg"
-              alt="A collection of designer bags and accessories laid out, ready for their next owner"
-              fill
-              sizes="(max-width: 1024px) 90vw, 55vw"
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
-
-        <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-citrus-deep">
-            Membership
-          </p>
-          <h1 className="mt-2 font-display text-xl leading-[1.15] text-ink sm:text-2xl">
-            Ready for your piece to have a new life? Become a Yxmember and pass your piece to
-            its next journey.
-          </h1>
-
-          {isSignedIn && member && (
-            <div className="mt-4 flex items-center justify-between rounded-sm border border-ink/40 bg-paper px-4 py-3">
-              <p className="font-mono text-xs uppercase tracking-[0.12em] text-ink">
-                {isMember
-                  ? `You're a Yxmember, ${member.firstName || member.email} — selling is unlocked.`
-                  : `Signed in as ${member.email}`}
-              </p>
-              <button
-                onClick={() => void signOut()}
-                className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft underline underline-offset-4 transition hover:text-ink"
-              >
-                Sign out
-              </button>
-            </div>
-          )}
-
-          <div className="mt-5 rounded-sm border-2 border-ink bg-paper">
-            <div className="border-b-2 border-ink px-5 py-3">
-              <p className="font-marker text-xl text-ink">Yxmember</p>
-            </div>
-            <div className="px-5 py-4">
-              <p className="flex items-baseline gap-1">
-                <span className="font-display text-3xl text-ink">$20</span>
-                <span className="font-mono text-xs text-ink-soft">/ month</span>
-              </p>
-
-              <ul className="mt-4 space-y-2">
-                {FEATURES.map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex gap-2 text-xs leading-relaxed text-ink-soft"
-                  >
-                    <span className="text-citrus-deep">—</span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              {isMember ? (
-                <button
-                  disabled
-                  className="mt-5 w-full cursor-not-allowed rounded-full bg-ink py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-cream opacity-40"
-                >
-                  Already a Yxmember
-                </button>
-              ) : isSignedIn ? (
-                <div className="mt-5 border-t border-ink-line pt-4">
-                  {error && (
-                    <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.08em] text-red-700">
-                      {error}
-                    </p>
-                  )}
-                  <button
-                    onClick={handleCheckout}
-                    disabled={submitting}
-                    className="w-full rounded-full bg-ink py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {submitting ? "Redirecting to Checkout…" : "Become a Yxmember"}
-                  </button>
-                </div>
-              ) : (
+  const authForm = (
                 <div className="mt-5 border-t border-ink-line pt-4">
                   <div className="flex gap-1 font-mono text-[11px] uppercase tracking-[0.12em]">
                     <button
@@ -411,7 +338,172 @@ export default function MembershipPage() {
                     </form>
                   )}
                 </div>
-              )}
+  );
+
+  return (
+    <div className="bg-citrus">
+    <div className="mx-auto max-w-[1400px] px-5 pb-16 pt-24 sm:px-10 sm:pb-24 lg:pl-36 lg:pr-32 lg:pt-8">
+      <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-stretch lg:gap-16">
+        <div className="relative w-full overflow-hidden rounded-sm border border-ink-line bg-paper">
+          <div className="relative aspect-[4/5] w-full lg:h-full lg:aspect-auto">
+            <Image
+              src="/membership-hero-bags.jpg"
+              alt="A collection of designer bags and accessories laid out, ready for their next owner"
+              fill
+              sizes="(max-width: 1024px) 90vw, 55vw"
+              className="object-cover"
+              priority
+            />
+          </div>
+        </div>
+
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-citrus-deep">
+            Membership
+          </p>
+          <h1 className="mt-2 font-display text-xl leading-[1.15] text-ink sm:text-2xl">
+            Ready for your piece to have a new life? Become a Yxmember and pass your piece to
+            its next journey.
+          </h1>
+
+          {isSignedIn && member && (
+            <div className="mt-4 flex items-center justify-between rounded-sm border border-ink/40 bg-paper px-4 py-3">
+              <p className="font-mono text-xs uppercase tracking-[0.12em] text-ink">
+                {isMember
+                  ? `You're a Yxmember, ${member.firstName || member.email} — selling is unlocked.`
+                  : `Signed in as ${member.email}`}
+              </p>
+              <button
+                onClick={() => void signOut()}
+                className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft underline underline-offset-4 transition hover:text-ink"
+              >
+                Sign out
+              </button>
+            </div>
+          )}
+
+          <div className="mt-5 space-y-4">
+            <div className="rounded-sm border border-ink bg-paper">
+              <div className="flex items-baseline justify-between border-b border-ink px-5 py-3">
+                <p className="font-marker text-xl text-ink">Guest</p>
+                <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft">
+                  Free account
+                </p>
+              </div>
+              <div className="px-5 py-4">
+                <p className="font-display text-3xl text-ink">Free</p>
+
+                <ul className="mt-4 space-y-2">
+                  {GUEST_FEATURES.map((feature) => (
+                    <li key={feature} className="flex gap-2 text-xs leading-relaxed text-ink-soft">
+                      <span className="text-citrus-deep">—</span>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                {isSignedIn ? (
+                  <div className="mt-5 border-t border-ink-line pt-4">
+                    <p className="mb-3 text-xs text-ink-soft">
+                      {isMember
+                        ? "Included with your Yxmember account."
+                        : "Your free account is active."}
+                    </p>
+                    <Link
+                      href="/pieces"
+                      className="block w-full rounded-full border border-ink py-2.5 text-center font-mono text-[11px] uppercase tracking-[0.16em] text-ink transition hover:bg-ink hover:text-cream"
+                    >
+                      Shop the Pieces
+                    </Link>
+                  </div>
+                ) : plan === "guest" ? (
+                  authForm
+                ) : (
+                  <div className="mt-5 border-t border-ink-line pt-4">
+                    <button
+                      type="button"
+                      onClick={() => choosePlan("guest", "signUp")}
+                      className="w-full rounded-full border border-ink py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink transition hover:bg-ink hover:text-cream"
+                    >
+                      Create Free Account
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => choosePlan("guest", "signIn")}
+                      className="mt-3 w-full font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft underline underline-offset-4 transition hover:text-ink"
+                    >
+                      Already have an account? Sign in
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-sm border-2 border-ink bg-paper">
+              <div className="flex items-baseline justify-between border-b-2 border-ink px-5 py-3">
+                <p className="font-marker text-xl text-ink">Yxmember</p>
+                <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-citrus-deep">
+                  Membership
+                </p>
+              </div>
+              <div className="px-5 py-4">
+                <p className="flex items-baseline gap-1">
+                  <span className="font-display text-3xl text-ink">$20</span>
+                  <span className="font-mono text-xs text-ink-soft">/ month</span>
+                </p>
+
+                <ul className="mt-4 space-y-2">
+                  {FEATURES.map((feature) => (
+                    <li key={feature} className="flex gap-2 text-xs leading-relaxed text-ink-soft">
+                      <span className="text-citrus-deep">—</span>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                {isMember ? (
+                  <button
+                    disabled
+                    className="mt-5 w-full cursor-not-allowed rounded-full bg-ink py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-cream opacity-40"
+                  >
+                    Already a Yxmember
+                  </button>
+                ) : isSignedIn ? (
+                  <div className="mt-5 border-t border-ink-line pt-4">
+                    {error && (
+                      <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.08em] text-red-700">
+                        {error}
+                      </p>
+                    )}
+                    <button
+                      onClick={handleCheckout}
+                      disabled={submitting}
+                      className="w-full rounded-full bg-ink py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {submitting ? "Redirecting to Checkout…" : "Become a Yxmember"}
+                    </button>
+                  </div>
+                ) : plan === "member" ? (
+                  authForm
+                ) : (
+                  <div className="mt-5 border-t border-ink-line pt-4">
+                    <button
+                      type="button"
+                      onClick={() => choosePlan("member", "signUp")}
+                      className="w-full rounded-full bg-ink py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft"
+                    >
+                      Join as Yxmember
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => choosePlan("member", "signIn")}
+                      className="mt-3 w-full font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft underline underline-offset-4 transition hover:text-ink"
+                    >
+                      Already a member? Sign in
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

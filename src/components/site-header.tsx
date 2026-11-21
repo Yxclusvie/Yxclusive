@@ -9,14 +9,16 @@ import { useCart } from "@/lib/cart";
 import { BrandMark } from "@/components/brand-mark";
 
 const ACCOUNT_SUBNAV = [
-  { href: "/account", label: "Profile" },
-  { href: "/account/sell", label: "Sell" },
-  { href: "/account/purchases", label: "Purchases" },
-  { href: "/account/selling-activity", label: "Selling Activity" },
+  { href: "/account", label: "Profile", membersOnly: false },
+  { href: "/account/sell", label: "Sell", membersOnly: true },
+  { href: "/account/purchases", label: "Purchases", membersOnly: false },
+  { href: "/account/selling-activity", label: "Selling Activity", membersOnly: true },
 ];
 
 export function SiteHeader() {
-  const { isMember, isAdmin, isLoaded } = useMembership();
+  const { isMember, isAdmin, isLoaded, member } = useMembership();
+  const signedIn = isLoaded && member !== null;
+  const accountSubnav = ACCOUNT_SUBNAV.filter((sub) => isMember || !sub.membersOnly);
   const { count: cartCount } = useCart();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -31,12 +33,12 @@ export function SiteHeader() {
   }, [menuOpen]);
 
   const navLinks =
-    isLoaded && isMember
+    signedIn
       ? [
           { href: "/", label: "Home" },
           { href: "/about", label: "About" },
           { href: "/pieces", label: "Pieces" },
-          { href: "/account", label: "Yxmember" },
+          { href: "/account", label: isMember ? "Yxmember" : "Account" },
         ]
       : [
           { href: "/", label: "Home" },
@@ -56,7 +58,7 @@ export function SiteHeader() {
                 <Link
                   href={link.href}
                   onClick={() => {
-                    if (link.label === "Yxmember") setAccountNavOpen((prev) => !prev);
+                    if (link.href === "/account") setAccountNavOpen((prev) => !prev);
                   }}
                   className={`inline-block py-0.5 transition ${
                     active ? "underline underline-offset-4" : "opacity-90 hover:opacity-100"
@@ -64,9 +66,9 @@ export function SiteHeader() {
                 >
                   {link.label}
                 </Link>
-                {link.label === "Yxmember" && pathname.startsWith("/account") && accountNavOpen && (
+                {link.href === "/account" && pathname.startsWith("/account") && accountNavOpen && (
                   <ul className="mt-0.5 flex flex-col gap-0.5 border-l border-cream/30 pl-2 text-[9px] tracking-[0.1em]">
-                    {ACCOUNT_SUBNAV.map((sub) => (
+                    {accountSubnav.map((sub) => (
                       <li key={sub.href}>
                         <Link
                           href={sub.href}
@@ -158,13 +160,13 @@ export function SiteHeader() {
           <div className="flex flex-col items-center gap-5 font-mono text-[11px] uppercase tracking-[0.14em] text-cream [text-shadow:0_1px_4px_rgba(0,0,0,0.55)]">
             {navLinks.map((link) => {
               const active = pathname === link.href;
-              const isYxmember = link.label === "Yxmember";
+              const isAccountLink = link.href === "/account";
               return (
                 <div key={link.label} className="flex flex-col items-center">
                   <Link
                     href={link.href}
                     onClick={(event) => {
-                      if (isYxmember && isMember) {
+                      if (isAccountLink && signedIn) {
                         event.preventDefault();
                         setAccountNavOpen((prev) => !prev);
                       } else {
@@ -177,9 +179,9 @@ export function SiteHeader() {
                   >
                     {link.label}
                   </Link>
-                  {isYxmember && isMember && accountNavOpen && (
+                  {isAccountLink && signedIn && accountNavOpen && (
                     <div className="mt-1 flex flex-col items-center gap-1 text-[10px] tracking-[0.1em]">
-                      {ACCOUNT_SUBNAV.map((sub) => (
+                      {accountSubnav.map((sub) => (
                         <Link
                           key={sub.href}
                           href={sub.href}
