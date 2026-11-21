@@ -141,3 +141,28 @@ body {
 .animate-swipe-hint-right {
   animation: swipe-hint-right 1.4s ease-in-out infinite;
 }
+
+@keyframes hint-life {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  8%,
+  86% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-hint-life {
+  animation: hint-life 6s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hint-life {
+    animation: none !important;
+  }
+}

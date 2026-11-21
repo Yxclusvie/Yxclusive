@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { Category, Item } from "@/lib/items";
 import { PieceCardMedia } from "@/components/piece-card-media";
 import { useMembership } from "@/lib/membership";
@@ -55,6 +55,9 @@ export function PiecesShop({
   const [saved, setSaved] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("single");
+  const [hintDone, setHintDone] = useState(false);
+  const finishHint = useCallback(() => setHintDone(true), []);
+  const hintSeen = useSyncExternalStore(subscribeNever, readHintSeen, () => true);
 
   const makerList = useMemo(
     () => Array.from(new Set(items.map((item) => item.maker))).sort(),
@@ -132,6 +135,10 @@ export function PiecesShop({
       >
         <GridIcon className="h-6 w-6" fill={viewMode === "grid" ? "currentColor" : "none"} />
       </button>
+
+      {!hintSeen && !hintDone && viewMode === "single" && filtered.length > 0 && (
+        <MobileHint onDone={finishHint} />
+      )}
 
       {/* Backdrop */}
       <div
@@ -254,6 +261,75 @@ export function PiecesShop({
           )}
         </>
       )}
+    </div>
+  );
+}
+
+const HINT_KEY = "yx-pieces-hint-seen";
+const HINT_MS = 6000;
+
+function subscribeNever() {
+  return () => {};
+}
+
+function readHintSeen() {
+  try {
+    return window.sessionStorage.getItem(HINT_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function MobileHint({ onDone }: { onDone: () => void }) {
+  useEffect(() => {
+    const finish = () => {
+      try {
+        window.sessionStorage.setItem(HINT_KEY, "1");
+      } catch {
+        // Storage unavailable (private mode) — the guide just shows again next visit.
+      }
+      onDone();
+    };
+
+    const timer = window.setTimeout(finish, HINT_MS);
+    window.addEventListener("pointerdown", finish, { once: true });
+    window.addEventListener("scroll", finish, { once: true, capture: true });
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("pointerdown", finish);
+      window.removeEventListener("scroll", finish, { capture: true });
+    };
+  }, [onDone]);
+
+  const label =
+    "relative rounded-full bg-ink/80 px-2.5 py-1.5 text-center font-mono text-[10px] uppercase leading-snug tracking-[0.12em] text-cream backdrop-blur-sm";
+  const caret =
+    "absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-ink/80";
+
+  return (
+    <div
+      aria-hidden="true"
+      className="animate-hint-life pointer-events-none fixed inset-0 z-30 lg:hidden"
+    >
+      <div className="absolute left-[41.1%] top-[66px] -translate-x-1/2">
+        <p className={label}>
+          <span className={caret} />
+          Filter
+        </p>
+      </div>
+      <div className="absolute left-[65.5%] top-[66px] -translate-x-1/2">
+        <p className={`${label} whitespace-nowrap`}>
+          <span className={caret} />
+          Grid view
+        </p>
+      </div>
+      <div className="absolute inset-x-0 bottom-28 flex justify-center">
+        <p className={`${label} flex items-center gap-2 whitespace-nowrap py-2`}>
+          <span aria-hidden="true">←</span>
+          Swipe to browse
+          <span aria-hidden="true">→</span>
+        </p>
+      </div>
     </div>
   );
 }
