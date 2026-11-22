@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useMembership } from "@/lib/membership";
 
@@ -29,6 +30,7 @@ export default function MembershipPage() {
     signOut,
   } = useMembership();
 
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>("signIn");
   const [plan, setPlan] = useState<"guest" | "member" | null>(null);
   const [firstName, setFirstName] = useState("");
@@ -112,25 +114,10 @@ export default function MembershipPage() {
     setSubmitting(false);
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     setError(null);
     setSubmitting(true);
-
-    try {
-      const response = await fetch("/api/checkout", { method: "POST" });
-      const data = await response.json();
-
-      if (!response.ok || !data.url) {
-        setError(data.error ?? "Something went wrong starting checkout.");
-        setSubmitting(false);
-        return;
-      }
-
-      window.location.href = data.url;
-    } catch {
-      setError("Something went wrong starting checkout.");
-      setSubmitting(false);
-    }
+    router.push("/checkout?membership=1");
   };
 
   const switchMode = (nextMode: Mode) => {
@@ -480,7 +467,7 @@ export default function MembershipPage() {
                       disabled={submitting}
                       className="w-full rounded-full bg-ink py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {submitting ? "Redirecting to Checkout…" : "Become a Yxmember"}
+                      {submitting ? "Opening checkout…" : "Become a Yxmember"}
                     </button>
                   </div>
                 ) : plan === "member" ? (
@@ -509,7 +496,7 @@ export default function MembershipPage() {
 
           <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-soft/70">
             {isSignedIn
-              ? "You'll be redirected to Stripe to complete payment securely."
+              ? "Pay securely with Stripe, right here on Yxclusive."
               : "Your account, secured with an email and password."}
           </p>
         </div>

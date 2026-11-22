@@ -83,13 +83,13 @@ export async function POST(request: NextRequest) {
       quantity: 1,
     })),
     metadata: { productIds: items.map((item) => item.id).join(","), userId: user.id },
-    success_url: `${origin}/orders/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/cart`,
+    ui_mode: "embedded_page",
+    return_url: `${origin}/orders/success?session_id={CHECKOUT_SESSION_ID}`,
   });
 
-  if (!session.url) {
+  if (!session.client_secret) {
     return NextResponse.json({ error: "Could not start checkout." }, { status: 500 });
   }
 
-  return NextResponse.json({ url: session.url });
+  return NextResponse.json({ clientSecret: session.client_secret });
 }

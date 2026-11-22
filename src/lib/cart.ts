@@ -61,6 +61,14 @@ function subscribe(listener: () => void) {
   };
 }
 
+export function readCartIds(): string[] {
+  return read().map((entry) => entry.id);
+}
+
+export function removeFromCart(id: string) {
+  write(read().filter((entry) => entry.id !== id));
+}
+
 export function clearCart() {
   write([]);
 }

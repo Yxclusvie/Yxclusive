@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useMembership } from "@/lib/membership";
 import { MAX_CART_ITEMS, toCartItem, useCart } from "@/lib/cart";
@@ -9,33 +10,15 @@ import type { Item } from "@/lib/items";
 export function PurchasePanel({ item }: { item: Item }) {
   const { isMember, isLoaded, member } = useMembership();
   const cart = useCart();
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const signedIn = isLoaded && member !== null;
 
-  const handleBuy = async () => {
+  const handleBuy = () => {
     setError(null);
     setSubmitting(true);
-
-    try {
-      const response = await fetch("/api/checkout/item", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: item.id }),
-      });
-      const data = await response.json();
-
-      if (!response.ok || !data.url) {
-        setError(data.error ?? "Something went wrong starting checkout.");
-        setSubmitting(false);
-        return;
-      }
-
-      window.location.href = data.url;
-    } catch {
-      setError("Something went wrong starting checkout.");
-      setSubmitting(false);
-    }
+    router.push(`/checkout?item=${item.id}`);
   };
 
   if (item.sold) {
@@ -95,11 +78,11 @@ export function PurchasePanel({ item }: { item: Item }) {
       </p>
       {signedIn ? (
         <button
-          onClick={() => void handleBuy()}
+          onClick={handleBuy}
           disabled={submitting}
           className="mt-4 w-full rounded-full bg-ink py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {submitting ? "Redirecting to Checkout…" : "Buy Now"}
+          {submitting ? "Opening checkout…" : "Buy Now"}
         </button>
       ) : (
         <Link
@@ -136,7 +119,7 @@ export function PurchasePanel({ item }: { item: Item }) {
       )}
       <p className="mt-3 font-mono text-[10px] leading-relaxed text-ink-soft">
         {signedIn
-          ? "You\u2019ll be redirected to Stripe to complete payment securely."
+          ? "Pay securely with Stripe, right here on Yxclusive."
           : "A free account is all you need to buy. No membership required."}
       </p>
     </div>

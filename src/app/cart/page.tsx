@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useCart } from "@/lib/cart";
 import { useMembership } from "@/lib/membership";
@@ -9,36 +10,13 @@ import { useMembership } from "@/lib/membership";
 export default function CartPage() {
   const { isMember, isLoaded, member } = useMembership();
   const cart = useCart();
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const hasMembersOnly = !isMember && cart.items.some((entry) => entry.membersOnly);
 
-  const handleCheckout = async () => {
-    setError(null);
+  const handleCheckout = () => {
     setSubmitting(true);
-
-    try {
-      const response = await fetch("/api/checkout/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productIds: cart.items.map((entry) => entry.id) }),
-      });
-      const data = await response.json();
-
-      if (!response.ok || !data.url) {
-        if (Array.isArray(data.unavailableIds)) {
-          data.unavailableIds.forEach((id: string) => cart.remove(id));
-        }
-        setError(data.error ?? "Something went wrong starting checkout.");
-        setSubmitting(false);
-        return;
-      }
-
-      window.location.href = data.url;
-    } catch {
-      setError("Something went wrong starting checkout.");
-      setSubmitting(false);
-    }
+    router.push("/checkout?cart=1");
   };
 
   return (
@@ -124,11 +102,11 @@ export default function CartPage() {
                   </Link>
                 ) : member ? (
                   <button
-                    onClick={() => void handleCheckout()}
+                    onClick={handleCheckout}
                     disabled={submitting}
                     className="mt-4 w-full rounded-full bg-ink py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-cream transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {submitting ? "Redirecting to Checkout…" : "Checkout"}
+                    {submitting ? "Opening checkout…" : "Checkout"}
                   </button>
                 ) : (
                   <Link
@@ -146,13 +124,8 @@ export default function CartPage() {
                   </p>
                 )}
 
-                {error && (
-                  <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.08em] text-red-700">
-                    {error}
-                  </p>
-                )}
                 <p className="mt-3 font-mono text-[10px] leading-relaxed text-ink-soft">
-                  You&rsquo;ll be redirected to Stripe to complete payment securely.
+                  Pay securely with Stripe, right here on Yxclusive.
                 </p>
               </div>
 

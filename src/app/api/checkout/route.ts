@@ -33,20 +33,20 @@ export async function POST(request: NextRequest) {
           recurring: { interval: "month" },
           product_data: {
             name: "Yxmember",
-            description: "No commission, 10% off every purchase, and event access.",
+            description: "Keep 95% of every sale, members-only pieces, and event access.",
           },
         },
         quantity: 1,
       },
     ],
     metadata: { userId: user.id, name },
-    success_url: `${origin}/membership/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/membership`,
+    ui_mode: "embedded_page",
+    return_url: `${origin}/membership/success?session_id={CHECKOUT_SESSION_ID}`,
   });
 
-  if (!session.url) {
+  if (!session.client_secret) {
     return NextResponse.json({ error: "Could not start checkout." }, { status: 500 });
   }
 
-  return NextResponse.json({ url: session.url });
+  return NextResponse.json({ clientSecret: session.client_secret });
 }
