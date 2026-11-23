@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { stripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { SuccessClient } from "./success-client";
 
 export default async function MembershipSuccessPage({
@@ -32,19 +33,30 @@ export default async function MembershipSuccessPage({
   const stripeSubscriptionId =
     typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
 
-  const { error: updateError } = await supabase
+  // Membership is granted with the server-side key, after the paid Stripe session is
+  // verified above. Until that key is configured this falls back to the user's own
+  // session, which only works while clients can still edit is_member (migration 0013
+  // removes that, so the key must be in place before it runs).
+  const db = hasAdminClient() ? createAdminClient() : supabase;
+
+  const { data: updated, error: updateError } = await db
     .from("profiles")
     .update({
       is_member: true,
       stripe_customer_id: stripeCustomerId,
       stripe_subscription_id: stripeSubscriptionId,
     })
-    .eq("id", user.id);
+    .eq("id", user.id)
+    .select("id");
 
-  if (updateError) {
+  // A blocked update (wrong or missing key, row-level security) matches zero rows
+  // without raising an error, so check one row really changed.
+  if (updateError || !updated || updated.length === 0) {
     // Payment succeeded but we failed to activate membership — this must not
     // render a false "you're a member" success state.
-    throw new Error(`Failed to activate membership: ${updateError.message}`);
+    throw new Error(
+      `Failed to activate membership: ${updateError?.message ?? "no profile row was updated"}`,
+    );
   }
 
   const name = (session.metadata?.name || "").trim() || user.email || "Yxmember";
