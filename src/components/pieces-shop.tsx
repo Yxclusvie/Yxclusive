@@ -6,6 +6,7 @@ import type { Category, Item } from "@/lib/items";
 import { PieceCardMedia } from "@/components/piece-card-media";
 import { useMembership } from "@/lib/membership";
 import { toCartItem, useCart } from "@/lib/cart";
+import { useLikes } from "@/lib/likes";
 
 const CATEGORIES: Category[] = [
   "Bags",
@@ -55,6 +56,7 @@ export function PiecesShop({
   const [saved, setSaved] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("single");
+  const likes = useLikes();
   const [hintDone, setHintDone] = useState(false);
   const finishHint = useCallback(() => setHintDone(true), []);
   const hintSeen = useSyncExternalStore(subscribeNever, readHintSeen, () => true);
@@ -248,14 +250,26 @@ export function PiecesShop({
             }
           >
             {filtered.map((item) => (
-              <ProductCard key={item.slug} item={item} />
+              <ProductCard
+                key={item.slug}
+                item={item}
+                likeCount={likes.countFor(item)}
+                liked={likes.isLiked(item.id)}
+                onToggleLike={() => void likes.toggle(item)}
+              />
             ))}
           </div>
 
           {viewMode === "single" && (
             <div className="fixed inset-0 z-20 flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden lg:hidden">
               {filtered.map((item) => (
-                <CarouselSlide key={item.slug} item={item} />
+                <CarouselSlide
+                  key={item.slug}
+                  item={item}
+                  likeCount={likes.countFor(item)}
+                  liked={likes.isLiked(item.id)}
+                  onToggleLike={() => void likes.toggle(item)}
+                />
               ))}
             </div>
           )}
@@ -405,10 +419,14 @@ function FilterCheckbox({
   );
 }
 
-function ProductCard({ item }: { item: Item }) {
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(item.likes);
+type LikeProps = { likeCount: number; liked: boolean; onToggleLike: () => void };
 
+function ProductCard({
+  item,
+  likeCount,
+  liked,
+  onToggleLike,
+}: { item: Item } & LikeProps) {
   const otherImages = item.images
     .slice(1, 3)
     .map((image, index) => ({ url: image.url, index: index + 1 }));
@@ -444,8 +462,7 @@ function ProductCard({ item }: { item: Item }) {
             type="button"
             onClick={(event) => {
               event.preventDefault();
-              setLiked((prev) => !prev);
-              setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+              onToggleLike();
             }}
             aria-pressed={liked}
             aria-label={liked ? "Unlike this piece" : "Like this piece"}
@@ -476,12 +493,15 @@ function ProductCard({ item }: { item: Item }) {
   );
 }
 
-function CarouselSlide({ item }: { item: Item }) {
+function CarouselSlide({
+  item,
+  likeCount,
+  liked,
+  onToggleLike,
+}: { item: Item } & LikeProps) {
   const { isMember } = useMembership();
   const cart = useCart();
   const inCart = cart.has(item.id);
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(item.likes);
   const [copied, setCopied] = useState(false);
 
   const handleShare = async (event: React.MouseEvent) => {
@@ -553,8 +573,7 @@ function CarouselSlide({ item }: { item: Item }) {
             type="button"
             onClick={(event) => {
               event.preventDefault();
-              setLiked((prev) => !prev);
-              setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+              onToggleLike();
             }}
             aria-pressed={liked}
             aria-label={liked ? "Unlike this piece" : "Like this piece"}
